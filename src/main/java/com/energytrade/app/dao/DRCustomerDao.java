@@ -21,6 +21,7 @@ public class DRCustomerDao {
 		HashMap<String, Object> response = new HashMap<String, Object>();
 		try {
 			response.put("contractDetails", drCustomerRepo.getBusinessContractDetails(contractNumber));
+			response.put("userCount", drCustomerRepo.getUserDetailsfromContract(contractNumber));
 			response.put("message", CustomMessages.getCustomMessages("SUC"));
 			response.put("key", "200");
 		} catch (Exception e) {
