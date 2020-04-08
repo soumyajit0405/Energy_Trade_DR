@@ -39,4 +39,8 @@ public class DRCustomerService extends AbstractBaseService {
 		return this.drCustomerDao.updateDrUserDetails(phone, fullName, drContractNumber);
 	}
 
+	public HashMap<String, Object> getEventSetsForCustomer(int customerId) {
+		return this.drCustomerDao.getEventSetsForCustomer(customerId);
+	}
+
 }
