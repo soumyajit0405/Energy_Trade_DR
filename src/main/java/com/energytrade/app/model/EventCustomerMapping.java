@@ -3,6 +3,7 @@ package com.energytrade.app.model;
 import java.io.Serializable;
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -23,7 +24,7 @@ public class EventCustomerMapping implements Serializable {
 	private byte activeStatus;
 
 	@Column(name="actual_power")
-	private double actualPower;
+	private Double actualPower;
 
 	@Column(name="bid_price")
 	private double bidPrice;
@@ -33,7 +34,7 @@ public class EventCustomerMapping implements Serializable {
 	private Date bidTs;
 
 	@Column(name="commited_power")
-	private double commitedPower;
+	private Double commitedPower;
 
 	@Column(name="created_by")
 	private String createdBy;
@@ -42,6 +43,12 @@ public class EventCustomerMapping implements Serializable {
 	@Column(name="created_ts")
 	private Date createdTs;
 
+	@Column(name="counter_bid_flag")
+	private String counterBidFlag;
+	
+	@Column(name="counter_bid_amount")
+	private Double counterBidAmount;
+	
 	@Column(name="event_customer_status_id")
 	private int eventCustomerStatusId;
 
@@ -67,12 +74,16 @@ public class EventCustomerMapping implements Serializable {
 	@ManyToOne
 	@JoinColumn(name="customer_id")
 	private AllUser allUser;
+	
+	//bi-directional many-to-one association to EventCustomerMapping
+	@OneToMany(mappedBy="eventCustomerMapping")
+	private List<EventCustomerDevices> eventCustomerDevices;
 
 	public EventCustomerMapping() {
 	}
 
 	public int getEventCustomerMappingId() {
-		return this.eventCustomerMappingId;
+		return eventCustomerMappingId;
 	}
 
 	public void setEventCustomerMappingId(int eventCustomerMappingId) {
@@ -80,23 +91,23 @@ public class EventCustomerMapping implements Serializable {
 	}
 
 	public byte getActiveStatus() {
-		return this.activeStatus;
+		return activeStatus;
 	}
 
 	public void setActiveStatus(byte activeStatus) {
 		this.activeStatus = activeStatus;
 	}
 
-	public double getActualPower() {
-		return this.actualPower;
+	public Double getActualPower() {
+		return actualPower;
 	}
 
-	public void setActualPower(double actualPower) {
+	public void setActualPower(Double actualPower) {
 		this.actualPower = actualPower;
 	}
 
 	public double getBidPrice() {
-		return this.bidPrice;
+		return bidPrice;
 	}
 
 	public void setBidPrice(double bidPrice) {
@@ -104,23 +115,23 @@ public class EventCustomerMapping implements Serializable {
 	}
 
 	public Date getBidTs() {
-		return this.bidTs;
+		return bidTs;
 	}
 
 	public void setBidTs(Date bidTs) {
 		this.bidTs = bidTs;
 	}
 
-	public double getCommitedPower() {
-		return this.commitedPower;
+	public Double getCommitedPower() {
+		return commitedPower;
 	}
 
-	public void setCommitedPower(double commitedPower) {
+	public void setCommitedPower(Double commitedPower) {
 		this.commitedPower = commitedPower;
 	}
 
 	public String getCreatedBy() {
-		return this.createdBy;
+		return createdBy;
 	}
 
 	public void setCreatedBy(String createdBy) {
@@ -128,15 +139,31 @@ public class EventCustomerMapping implements Serializable {
 	}
 
 	public Date getCreatedTs() {
-		return this.createdTs;
+		return createdTs;
 	}
 
 	public void setCreatedTs(Date createdTs) {
 		this.createdTs = createdTs;
 	}
 
+	public String getCounterBidFlag() {
+		return counterBidFlag;
+	}
+
+	public void setCounterBidFlag(String counterBidFlag) {
+		this.counterBidFlag = counterBidFlag;
+	}
+
+	public Double getCounterBidAmount() {
+		return counterBidAmount;
+	}
+
+	public void setCounterBidAmount(Double counterBidAmount) {
+		this.counterBidAmount = counterBidAmount;
+	}
+
 	public int getEventCustomerStatusId() {
-		return this.eventCustomerStatusId;
+		return eventCustomerStatusId;
 	}
 
 	public void setEventCustomerStatusId(int eventCustomerStatusId) {
@@ -144,7 +171,7 @@ public class EventCustomerMapping implements Serializable {
 	}
 
 	public byte getSoftdeleteflag() {
-		return this.softdeleteflag;
+		return softdeleteflag;
 	}
 
 	public void setSoftdeleteflag(byte softdeleteflag) {
@@ -152,7 +179,7 @@ public class EventCustomerMapping implements Serializable {
 	}
 
 	public Date getSyncTs() {
-		return this.syncTs;
+		return syncTs;
 	}
 
 	public void setSyncTs(Date syncTs) {
@@ -160,7 +187,7 @@ public class EventCustomerMapping implements Serializable {
 	}
 
 	public String getUpdatedBy() {
-		return this.updatedBy;
+		return updatedBy;
 	}
 
 	public void setUpdatedBy(String updatedBy) {
@@ -168,7 +195,7 @@ public class EventCustomerMapping implements Serializable {
 	}
 
 	public Date getUpdatedTs() {
-		return this.updatedTs;
+		return updatedTs;
 	}
 
 	public void setUpdatedTs(Date updatedTs) {
@@ -176,7 +203,7 @@ public class EventCustomerMapping implements Serializable {
 	}
 
 	public AllEvent getAllEvent() {
-		return this.allEvent;
+		return allEvent;
 	}
 
 	public void setAllEvent(AllEvent allEvent) {
@@ -184,11 +211,23 @@ public class EventCustomerMapping implements Serializable {
 	}
 
 	public AllUser getAllUser() {
-		return this.allUser;
+		return allUser;
 	}
 
 	public void setAllUser(AllUser allUser) {
 		this.allUser = allUser;
 	}
+
+	public List<EventCustomerDevices> getEventCustomerDevices() {
+		return eventCustomerDevices;
+	}
+
+	public void setEventCustomerDevices(List<EventCustomerDevices> eventCustomerDevices) {
+		this.eventCustomerDevices = eventCustomerDevices;
+	}
+
+	
+	
+	
 
 }
