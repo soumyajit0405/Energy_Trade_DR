@@ -12,6 +12,7 @@ import com.energytrade.app.model.AllEventSet;
 import com.energytrade.app.model.AllUser;
 import com.energytrade.app.model.DRContracts;
 import com.energytrade.app.model.EventCustomerMapping;
+import com.energytrade.app.model.UserDRDevices;
 import com.energytrade.app.model.UserRolesPl;
 
 @Repository
@@ -31,6 +32,12 @@ public interface DRCustomerRepository extends JpaRepository<AllUser, Long> {
 
 	@Query("select a from EventCustomerMapping a where a.allEvent.eventId = ?2 and a.allUser.userId = ?1")
 	EventCustomerMapping getEventCustomerMapping(int customerId, int eventId);
+	
+	@Query("select userDrDevice from EventCustomerDevices a where a.eventCustomerMapping.eventCustomerMappingId = ?1")
+	List<UserDRDevices> getuserMappedDevices(int eventCustomerMappingId);
+	
+	@Query("select a from UserDRDevices a where a.allUser.userId = ?1")
+	List<UserDRDevices> getAllUserDevices(int userId);
 
 	@Modifying
 	@Query("update AllUser a set a.fullName=?1,a.userRolesPl.userRoleId=2,a.drContractNumber=?2 where a.phoneNumber=?3")

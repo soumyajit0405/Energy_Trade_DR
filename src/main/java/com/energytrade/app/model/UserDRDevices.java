@@ -56,4 +56,86 @@ public class UserDRDevices {
 	@Column(name = "device_capacity")
 	private Double device_capacity;
 
+	public int getUserDrDeviceId() {
+		return userDrDeviceId;
+	}
+
+	public void setUserDrDeviceId(int userDrDeviceId) {
+		this.userDrDeviceId = userDrDeviceId;
+	}
+
+	public AllUser getAllUser() {
+		return allUser;
+	}
+
+	public void setAllUser(AllUser allUser) {
+		this.allUser = allUser;
+	}
+
+	public String getDeviceName() {
+		return deviceName;
+	}
+
+	public void setDeviceName(String deviceName) {
+		this.deviceName = deviceName;
+	}
+
+	public String getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public String getUpdatedBy() {
+		return updatedBy;
+	}
+
+	public void setUpdatedBy(String updatedBy) {
+		this.updatedBy = updatedBy;
+	}
+
+	public Date getCreatedTs() {
+		return createdTs;
+	}
+
+	public void setCreatedTs(Date createdTs) {
+		this.createdTs = createdTs;
+	}
+
+	public Date getUpdatedTs() {
+		return updatedTs;
+	}
+
+	public void setUpdatedTs(Date updatedTs) {
+		this.updatedTs = updatedTs;
+	}
+
+	public Date getSyncTs() {
+		return syncTs;
+	}
+
+	public void setSyncTs(Date syncTs) {
+		this.syncTs = syncTs;
+	}
+
+	public byte getSoftdeleteflag() {
+		return softdeleteflag;
+	}
+
+	public void setSoftdeleteflag(byte softdeleteflag) {
+		this.softdeleteflag = softdeleteflag;
+	}
+
+	public Double getDevice_capacity() {
+		return device_capacity;
+	}
+
+	public void setDevice_capacity(Double device_capacity) {
+		this.device_capacity = device_capacity;
+	}
+
+	
+	
 }

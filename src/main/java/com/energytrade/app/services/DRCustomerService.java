@@ -43,4 +43,8 @@ public class DRCustomerService extends AbstractBaseService {
 		return this.drCustomerDao.getEventSetsForCustomer(customerId);
 	}
 
+	public HashMap<String, Object> getEventsForCustomerAndEventSet(int customerId, int eventSetId) {
+		return this.drCustomerDao.getEventsForCustomerAndEventSet(customerId, eventSetId);
+	}
+
 }

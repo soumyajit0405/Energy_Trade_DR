@@ -52,4 +52,13 @@ public class DRCustomerController extends AbstractBaseController {
 		return response;
 	}
 
+	@RequestMapping(value = "getEventsForCustomerAndEventSet", method = RequestMethod.POST, headers = "Accept=application/json")
+	public HashMap<String, Object> getEventsForCustomerAndEventSet(@RequestBody HashMap<String, Object> inputDetails) {
+
+		HashMap<String, Object> response = new HashMap<String, Object>();
+		response.put("response", drCustomerService.getEventsForCustomerAndEventSet((int) inputDetails.get("customerId"),
+				(int) inputDetails.get("eventSetId")));
+		return response;
+	}
+
 }
