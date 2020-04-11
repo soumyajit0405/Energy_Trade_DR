@@ -30,7 +30,7 @@ public class EventCustomerMappingDao extends AbstractBaseDao {
 		HashMap<String, Object> response = new HashMap<String, Object>();
 		int userId = (int) inputDetails.get("userId");
 		int eventId = (int) inputDetails.get("eventId");
-		double committedPower = (double) inputDetails.get("committedPower");
+		double committedPower = (double) (int)inputDetails.get("committedPower");
 		ArrayList<Integer> deviceList = (ArrayList<Integer>) inputDetails.get("devices");
 
 		try {

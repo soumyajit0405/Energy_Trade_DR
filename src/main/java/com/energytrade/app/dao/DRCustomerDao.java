@@ -119,7 +119,8 @@ public class DRCustomerDao {
 			for (int i = 0; i < cusomterEvents.size(); i++) {
 				CustomerEventDetailsDto customerEventDetails = new CustomerEventDetailsDto();
 				customerEventDetails.setEventId(cusomterEvents.get(i).getEventId());
-				// customerEventDetails.setEventStatus(cusomterEvents.get(i).getEventStatusPl().getName());
+				customerEventDetails.setEventStatus(cusomterEvents.get(i).getEventStatusPl().getName());
+				customerEventDetails.setEventName(cusomterEvents.get(i).getEventName());
 				customerEventDetails.setEventStartTime(cusomterEvents.get(i).getEventStartTime());
 				customerEventDetails.setEventEndTime(cusomterEvents.get(i).getEventEndTime());
 				customerEventDetails.setPlannedPower(cusomterEvents.get(i).getPlannedPower());

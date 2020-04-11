@@ -11,6 +11,7 @@ public class CustomerEventDetailsDto extends AbstractBaseDto {
 	 */
 	private static final long serialVersionUID = 1L;
 	private int eventId;
+	private String eventName;
 	private String eventStatus;
 	private Date eventStartTime;
 	private Date eventEndTime;
@@ -20,7 +21,6 @@ public class CustomerEventDetailsDto extends AbstractBaseDto {
 	private Double expectedPrice;
 	private Date createdTs;
 	private CustomerEventMappingDetailsDto eventCustomerDetails;
-	
 
 	public int getEventId() {
 		return eventId;
@@ -102,6 +102,12 @@ public class CustomerEventDetailsDto extends AbstractBaseDto {
 		this.eventCustomerDetails = eventCustomerDetails;
 	}
 
-	
+	public String getEventName() {
+		return eventName;
+	}
+
+	public void setEventName(String eventName) {
+		this.eventName = eventName;
+	}
 
 }
