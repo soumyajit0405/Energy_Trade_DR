@@ -1,5 +1,6 @@
 package com.energytrade.app.controller;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,14 @@ public class EventCustomerMappingController {
 		return response;
 	}
 
+	@RequestMapping(value = "counterbidInEvent", method = RequestMethod.POST, headers = "Accept=application/json")
+	public HashMap<String, Object> counterbidInEvent(@RequestBody HashMap<String, Object> inputDetails) {
+
+		HashMap<String, Object> response = new HashMap<String, Object>();
+		response.put("response", eventCustomerMappingService.counterbidInEvent(inputDetails));
+		return response;
+	}
+
 	@RequestMapping(value = "withdrawFromEvent", method = RequestMethod.POST, headers = "Accept=application/json")
 	public HashMap<String, Object> withdrawFromEvent(@RequestBody HashMap<String, String> inputDetails) {
 
@@ -37,15 +46,12 @@ public class EventCustomerMappingController {
 	}
 
 	@RequestMapping(value = "updateEventCommitments", method = RequestMethod.POST, headers = "Accept=application/json")
-	public HashMap<String, Object> updateEventCommitments(@RequestBody HashMap<String, String> inputDetails) {
+	public HashMap<String, Object> updateEventCommitments(@RequestBody HashMap<String, Object> inputDetails) {
 
 		HashMap<String, Object> response = new HashMap<String, Object>();
-		int userId = Integer.parseInt(inputDetails.get("userId"));
-		int eventId = Integer.parseInt(inputDetails.get("eventId"));
-		double updatedCommitedPower = Double.parseDouble(inputDetails.get("updatedCommitedPower"));
-		double updatedBidPrice = Double.parseDouble(inputDetails.get("updatedBidPrice"));
-		response.put("response", eventCustomerMappingService.updateEventCommitments(userId, eventId,
-				updatedCommitedPower, updatedBidPrice));
+		
+		
+		response.put("response", eventCustomerMappingService.updateEventCommitments(inputDetails));
 		return response;
 	}
 

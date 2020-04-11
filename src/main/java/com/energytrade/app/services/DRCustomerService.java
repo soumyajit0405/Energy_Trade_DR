@@ -20,15 +20,16 @@ public class DRCustomerService extends AbstractBaseService {
 	public HashMap<String, Object> participateInEvent(HashMap<String, Object> inputDetails) {
 		return this.eventCustomerMappingDao.participateInEvent(inputDetails);
 	}
+	public HashMap<String, Object> counterbidInEvent(HashMap<String, Object> inputDetails) {
+		return this.eventCustomerMappingDao.counterbidInEvent(inputDetails);
+	}
 
 	public HashMap<String, Object> withdrawFromEvent(int userId, int eventId) {
 		return this.eventCustomerMappingDao.withdrawFromEvent(userId, eventId);
 	}
 
-	public HashMap<String, Object> updateEventCommitments(int userId, int eventId, double updatedCommitedPower,
-			double updatedBidPrice) {
-		return this.eventCustomerMappingDao.updateEventCommitments(userId, eventId, updatedCommitedPower,
-				updatedBidPrice);
+	public HashMap<String, Object> updateEventCommitments(HashMap<String, Object> inputDetails) {
+		return this.eventCustomerMappingDao.updateEventCommitments(inputDetails);
 	}
 
 	public HashMap<String, Object> getBusinessContractDetails(String contractId) {
