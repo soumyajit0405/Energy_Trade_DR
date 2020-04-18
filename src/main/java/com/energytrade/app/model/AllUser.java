@@ -8,76 +8,65 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.Date;
 import java.util.List;
 
-
 /**
  * The persistent class for the all_users database table.
  * 
  */
 @Entity
-@Table(name="all_users")
-@NamedQuery(name="AllUser.findAll", query="SELECT a FROM AllUser a")
+@Table(name = "all_users")
+@NamedQuery(name = "AllUser.findAll", query = "SELECT a FROM AllUser a")
 public class AllUser implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	
 	@Id
-	@Column(name="user_id")
+	@Column(name = "user_id")
 	private int userId;
 
-	@Column(name="active_status")
-	private byte activeStatus;
+	@Column(name = "active_status")
+	private Byte activeStatus;
 
-	@Column(name="created_by")
+	@Column(name = "created_by")
 	private String createdBy;
 
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="created_ts")
+	@Column(name = "created_ts")
 	private Date createdTs;
 
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="deactivation_date")
+	@Column(name = "deactivation_date")
 	private Date deactivationDate;
 
 	private String email;
 
-	@Column(name="full_name")
+	@Column(name = "full_name")
 	private String fullName;
-	
-	@Column(name="password")
-	private String password;
 
-	public String getPassword() {
-		return password;
-	}
-
-	public void setPassword(String password) {
-		this.password = password;
-	}
-
-
-	@Column(name="phone_number")
+	@Column(name = "phone_number")
 	private String phoneNumber;
 
+	@Column(name = "password")
+	private String password;
+
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="registration_date")
+	@Column(name = "registration_date")
 	private Date registrationDate;
 
 	private byte softdeleteflag;
 
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="sync_ts")
+	@Column(name = "sync_ts")
 	private Date syncTs;
 
-	@Column(name="updated_by")
+	@Column(name = "updated_by")
 	private String updatedBy;
 
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="updated_ts")
+	@Column(name = "updated_ts")
 	private Date updatedTs;
-	
-	@Column(name="unique_service_number")
+
+	@Column(name = "unique_service_number")
 	private String uniqueServiceNumber;
-	
+
 	public String getUniqueServiceNumber() {
 		return uniqueServiceNumber;
 	}
@@ -87,41 +76,47 @@ public class AllUser implements Serializable {
 	}
 
 	@JsonIgnore
-	//bi-directional many-to-one association to AllOtp
-	@OneToMany(mappedBy="allUser")
+	// bi-directional many-to-one association to AllOtp
+	@OneToMany(mappedBy = "allUser")
 	private List<AllOtp> allOtps;
 
-	//bi-directional many-to-one association to AllState
+	// bi-directional many-to-one association to AllState
 	@ManyToOne
-	@JoinColumn(name="state_id")
+	@JoinColumn(name = "state_id")
 	private AllState allState;
-	
-	//bi-directional many-to-one association to AllState
-		@ManyToOne
-		@JoinColumn(name="locality_id")
-		private LocalityPl locality;
+
+	// bi-directional many-to-one association to AllState
+	@ManyToOne
+	@JoinColumn(name = "locality_id")
+	private LocalityPl locality;
+
+	@OneToMany(mappedBy = "allUser")
+	private List<UserDRDevices> userDrDevices;
+
+	@Column(name = "dr_contract_number")
+	private String drContractNumber;
 
 	public LocalityPl getLocality() {
-			return locality;
-		}
+		return locality;
+	}
 
-		public void setLocality(LocalityPl locality) {
-			this.locality = locality;
-		}
+	public void setLocality(LocalityPl locality) {
+		this.locality = locality;
+	}
 
-	//bi-directional many-to-one association to AllElectricityBoard
+	// bi-directional many-to-one association to AllElectricityBoard
 	@ManyToOne
-	@JoinColumn(name="electricity_board_id")
+	@JoinColumn(name = "electricity_board_id")
 	private AllElectricityBoard allElectricityBoard;
 
-	//bi-directional many-to-one association to UserRolesPl
+	// bi-directional many-to-one association to UserRolesPl
 	@ManyToOne
-	@JoinColumn(name="user_role_id")
+	@JoinColumn(name = "user_role_id")
 	private UserRolesPl userRolesPl;
 
-	//bi-directional many-to-one association to UserTypePl
+	// bi-directional many-to-one association to UserTypePl
 	@ManyToOne
-	@JoinColumn(name="user_type_id")
+	@JoinColumn(name = "user_type_id")
 	private UserTypePl userTypePl;
 
 	public AllUser() {
@@ -284,5 +279,35 @@ public class AllUser implements Serializable {
 	public void setUserTypePl(UserTypePl userTypePl) {
 		this.userTypePl = userTypePl;
 	}
+
+	public List<UserDRDevices> getUserDrDevices() {
+		return userDrDevices;
+	}
+
+	public void setUserDrDevices(List<UserDRDevices> userDrDevices) {
+		this.userDrDevices = userDrDevices;
+	}
+
+	public String getDrContractNumber() {
+		return drContractNumber;
+	}
+
+	public void setDrContractNumber(String drContractNumber) {
+		this.drContractNumber = drContractNumber;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public void setActiveStatus(Byte activeStatus) {
+		this.activeStatus = activeStatus;
+	}
+	
+	
 
 }

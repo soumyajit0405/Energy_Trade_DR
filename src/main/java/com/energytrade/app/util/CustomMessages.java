@@ -18,9 +18,7 @@ public class CustomMessages {
 			return "PIN Not Validated.";
 		}
 		else if(code.equalsIgnoreCase("PR"))
-		{
-			return "Profile Retrived.";
-		}
+		{		}
 		else if(code.equalsIgnoreCase("OTS"))
 		{
 			return "OTP Matched.";

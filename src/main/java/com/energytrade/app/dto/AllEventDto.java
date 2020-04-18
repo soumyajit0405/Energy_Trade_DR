@@ -1,3 +1,4 @@
+
 package com.energytrade.app.dto;
 
 import java.util.List;
@@ -12,6 +13,7 @@ public class AllEventDto extends AbstractBaseDto{
 	private int participatedCustomers;
 	private int counterBidCustomers;
 	private String startTime;
+	
 	
 	public String getStartTime() {
 		return startTime;
