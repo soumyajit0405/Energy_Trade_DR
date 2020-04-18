@@ -114,4 +114,25 @@ public class DRController extends AbstractBaseController
     	response.put("response", drservice.getCustomerForEvents((List<Integer>)events.get("events")));
     	return response;
     }
+    
+    @RequestMapping(value =REST+"rejectCustomer" , method =  RequestMethod.POST , headers =  "Accept=application/json" )
+    public HashMap<String,Object> rejectCustomer(@RequestBody HashMap<String,Object> events) {
+    	HashMap<String,Object> response=new HashMap<String, Object>();
+    	response.put("response", drservice.rejectCustomer((int)events.get("eventId"),(int)events.get("eventCustomerId")));
+    	return response;
+    }
+    
+    @RequestMapping(value =REST+"acceptCounterBid" , method =  RequestMethod.POST , headers =  "Accept=application/json" )
+    public HashMap<String,Object> acceptCounterBid(@RequestBody HashMap<String,Object> events) {
+    	HashMap<String,Object> response=new HashMap<String, Object>();
+    	response.put("response", drservice.acceptCounterBid((int)events.get("eventId"),(int)events.get("eventCustomerId")));
+    	return response;
+    }
+    
+    @RequestMapping(value =REST+"cancelEvent" , method =  RequestMethod.POST , headers =  "Accept=application/json" )
+    public HashMap<String,Object> cancelEvent(@RequestBody HashMap<String,Object> events) {
+    	HashMap<String,Object> response=new HashMap<String, Object>();
+    	response.put("response", drservice.cancelEvent((int)events.get("eventId")));
+    	return response;
+    }
 }

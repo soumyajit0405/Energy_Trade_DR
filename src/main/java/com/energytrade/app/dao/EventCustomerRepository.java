@@ -18,6 +18,7 @@ import com.energytrade.app.model.AllTimeslot;
 import com.energytrade.app.model.AllUser;
 import com.energytrade.app.model.ContractStatusPl;
 import com.energytrade.app.model.EventCustomerMapping;
+import com.energytrade.app.model.EventCustomerStatusPl;
 import com.energytrade.app.model.EventSetStatusPl;
 import com.energytrade.app.model.LocalityPl;
 import com.energytrade.app.model.NonTradeHour;
@@ -37,6 +38,9 @@ public interface EventCustomerRepository extends JpaRepository<EventCustomerMapp
 	  
 	  @Query("Select max(eventCustomerMappingId) from EventCustomerMapping a ") 
 	  int getEventCustomerCount();
+	  
+	  @Query("Select a from EventCustomerMapping a where a.eventCustomerMappingId=?1") 
+	  EventCustomerMapping getEventCustomerById(int eventCustomerId);
 	 
 	  @Query("Select a from UserAccessLevelMapping a where a.userTypepl.userTypeId=2 and a.allUser.userId <> ?1") 
 	  List<UserAccessLevelMapping> getUserAccessLevel(int userId);
@@ -50,4 +54,19 @@ public interface EventCustomerRepository extends JpaRepository<EventCustomerMapp
 	  
 	  @Query("Select a from EventCustomerMapping a where a.allEvent.eventId=?1") 
 	  List<EventCustomerMapping> getEventCustomerMappings(int eventId);
+	  
+	  @Query("Select a from EventCustomerStatusPl a where a.eventCustomerStatusId=?1") 
+	  EventCustomerStatusPl getEventCustomerStatus(int statusId);
+	  
+	  @Modifying
+	  @Query("update EventCustomerMapping set eventCustomerStatusId=?1 where allEvent.eventId=?2 ") 
+	  void updateEventCustomer(int statusId, int eventId);
+	  
+	  @Modifying
+	  @Query("update EventCustomerMapping set eventCustomerStatusId=?1 where allEvent.eventId=?2 and eventCustomerMappingId=?3") 
+	  void updateEventCustomerbyId(int statusId, int eventId, int eventCustomerMapId);
+	  
+	  @Modifying
+	  @Query("update EventCustomerMapping set counterBidFlag=?1,eventCustomerStatusId=?2 where allEvent.eventId=?3 and eventCustomerMappingId=?4") 
+	  void acceptCounterBid(String status,int statusId, int eventId, int eventCustomerMapId);
 }

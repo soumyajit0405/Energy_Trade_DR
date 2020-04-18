@@ -1,4 +1,4 @@
-package com.jpchef.app;
+package com.energytrade;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -7,7 +7,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class JpChefApplicationTest {
+public class EnergyTradeDRTest {
 
 	@Test
 	public void contextLoads() {

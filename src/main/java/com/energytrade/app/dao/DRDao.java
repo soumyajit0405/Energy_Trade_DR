@@ -36,6 +36,7 @@ import com.energytrade.app.model.AllUser;
 import com.energytrade.app.model.ContractStatusPl;
 import com.energytrade.app.model.DevicePl;
 import com.energytrade.app.model.EventCustomerMapping;
+import com.energytrade.app.model.EventCustomerStatusPl;
 import com.energytrade.app.model.EventSetStatusPl;
 import com.energytrade.app.model.EventStatusPl;
 import com.energytrade.app.model.NonTradehourStatusPl;
@@ -133,6 +134,7 @@ public class DRDao extends AbstractBaseDao {
 			alleventset.setEventSetId(count);
 			alleventset.setEventSetStatusPl(eventsetstatuspl);
 			alleventset.setUploadTime(ts);
+			alleventset.setDate(new Date());
 			alleventsetdto.setEventSetName(location + year + month + date);
 			alleventsetdto.setUserId(alluser.getUserId());
 			alleventsetdto.setUserName(alluser.getFullName());
@@ -161,7 +163,7 @@ public class DRDao extends AbstractBaseDao {
 		try {
 			int count = eventcustomerrepo.getEventCustomerCount();
 			List<UserAccessLevelMapping> listOfusers = eventcustomerrepo.getUserAccessLevel(event.getAllEventSet().getAllUser().getUserId());
-				
+			//	EventCustomerStatusPl eventstatus = eventcustomerrepo.getEventCustomerStatus(1);
 				for (int j=0;j<listOfusers.size();j++) {
 					count++;
 					EventCustomerDto eventCustomerDto = new EventCustomerDto();
@@ -173,6 +175,7 @@ public class DRDao extends AbstractBaseDao {
 					eventCustomerDto.setUserName(listOfusers.get(j).getAllUser().getFullName());
 					eventCustomerDto.setEventId(event.getEventId());
 					eventCustomerDto.setIsSelected("Y");
+					eventCustomerMapping.setEventCustomerStatusId(1);
 					// eventCustomerDto.setActualPower(allevent.getActualPower());
 					eventCustomerDto.setParticipationStatus("1");
 					listOfEventCustDto.add(eventCustomerDto);
@@ -644,14 +647,44 @@ public class DRDao extends AbstractBaseDao {
         	
         		for(int i=0;i<events.size();i++) {
         	    	   eventrepo.updateEvent(2, events.get(i));
+        	    	   eventcustomerrepo.updateEventCustomer(2, events.get(i));
         	          }	
-        	
           int eventCount = eventrepo.getEventByStatusId(events.get(0));
           if(eventCount >0) {
         	  eventsetrepo.updateEvent(3, eventSetId);
           } else {
         	  eventsetrepo.updateEvent(2, eventSetId);
           }
+			response.put("responseStatus", "1");
+			response.put("responseMessage", "The request was successfully served.");
+			response.put("response",null);
+			response.put("customMessage", null);
+			
+
+       }
+        
+        
+        catch (Exception e) {
+            System.out.println("Error in checkExistence" + e.getMessage());
+            e.printStackTrace();
+			response.put("responseStatus", "2");
+			response.put("responseMessage", "Internal Server Error.");
+			response.put("response",null);
+			response.put("customMessage", null);
+			
+        }
+        return response;
+    }
+	
+	
+public HashMap<String,Object> cancelEvent(int event) {
+        
+    	HashMap<String,Object> response=new HashMap<String, Object>();
+        try {
+        	
+        	    	   eventrepo.updateEvent(4, event);
+        	    	   //eventcustomerrepo.updateEventCustomer(2, events.get(i));
+        	
 			response.put("responseStatus", "1");
 			response.put("responseMessage", "The request was successfully served.");
 			response.put("response",null);
@@ -802,4 +835,61 @@ public class DRDao extends AbstractBaseDao {
 		}
 		return response;
 	}
+	
+public HashMap<String,Object> rejectCustomer(int eventId, int customerId) {
+        
+    	HashMap<String,Object> response=new HashMap<String, Object>();
+    	
+        try {
+        
+        eventcustomerrepo.updateEventCustomerbyId(6, eventId, customerId);
+        	response.put("responseStatus", "1");
+		response.put("responseMessage", "The request was successfully served.");
+		response.put("response", null);
+		response.put("customMessage", null);
+
+       }
+        
+        
+        catch (Exception e) {
+            System.out.println("Error in checkExistence" + e.getMessage());
+            e.printStackTrace();
+			response.put("responseStatus", "2");
+			response.put("responseMessage", "Internal Server Error.");
+			response.put("response", null);
+			response.put("customMessage", null);
+
+           
+        }
+        return response;
+    }
+
+public HashMap<String,Object> acceptCounterBid(int eventId, int customerId) {
+    
+	HashMap<String,Object> response=new HashMap<String, Object>();
+	
+    try {
+    EventCustomerMapping eventcustomermapping = eventcustomerrepo.getEventCustomerById(customerId);
+    eventcustomerrepo.acceptCounterBid("Y",5, eventId, customerId);
+    eventrepo.updateEventPower(eventcustomermapping.getCommitedPower(), eventId);
+    	response.put("responseStatus", "1");
+	response.put("responseMessage", "The request was successfully served.");
+	response.put("response", null);
+	response.put("customMessage", null);
+
+   }
+    
+    
+    catch (Exception e) {
+        System.out.println("Error in checkExistence" + e.getMessage());
+        e.printStackTrace();
+		response.put("responseStatus", "2");
+		response.put("responseMessage", "Internal Server Error.");
+		response.put("response", null);
+		response.put("customMessage", null);
+
+       
+    }
+    return response;
+}
 }

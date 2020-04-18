@@ -47,4 +47,16 @@ public class DRService extends AbstractBaseService
     public HashMap<String,Object> getCustomerForEvents(List<Integer> events){
     	return drdao.getCustomerForEvents(events);
     }
+    
+    public HashMap<String,Object> rejectCustomer(int eventId, int customerId) {
+    	return drdao.rejectCustomer(eventId, customerId);
+    }
+    
+    public HashMap<String,Object> acceptCounterBid(int eventId, int customerId) {
+    	return drdao.acceptCounterBid(eventId, customerId);
+    }
+    
+    public HashMap<String,Object> cancelEvent(int event) {
+    	return drdao.cancelEvent(event);
+    }
 }

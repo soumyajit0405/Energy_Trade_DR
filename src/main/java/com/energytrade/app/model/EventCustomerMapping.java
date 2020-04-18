@@ -25,6 +25,28 @@ public class EventCustomerMapping implements Serializable {
 	@Column(name="actual_power")
 	private double actualPower;
 
+	@Column(name="counter_bid_flag")
+	private String counterBidFlag;
+	
+	@Column(name="counter_bid_amount")
+	private double counterBidAmount;
+	
+	public String getCounterBidFlag() {
+		return counterBidFlag;
+	}
+
+	public void setCounterBidFlag(String counterBidFlag) {
+		this.counterBidFlag = counterBidFlag;
+	}
+
+	public double getCounterBidAmount() {
+		return counterBidAmount;
+	}
+
+	public void setCounterBidAmount(double counterBidAmount) {
+		this.counterBidAmount = counterBidAmount;
+	}
+
 	@Column(name="bid_price")
 	private double bidPrice;
 
