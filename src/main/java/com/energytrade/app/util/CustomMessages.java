@@ -112,6 +112,11 @@ public class CustomMessages {
 		{
 			return "Non Trade Status Scheduled.";
 		}
+		
+		else if(code.equalsIgnoreCase("WL"))
+		{
+			return "Authentication Failure.";
+		}
 
 		return "Success";
 	}

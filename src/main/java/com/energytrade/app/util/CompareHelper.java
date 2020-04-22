@@ -8,18 +8,18 @@ import com.energytrade.app.model.EventCustomerMapping;
 
 public class CompareHelper {
 	
-	public static int compareData(List<EventCustomerMapping> listOfCustomers, int userId)
+	public static EventCustomerMapping compareData(List<EventCustomerMapping> listOfCustomers, int userId)
 	{
 		try {
 			for (int i=0;i<listOfCustomers.size();i++) {
 				if(listOfCustomers.get(i).getAllUser().getUserId() == userId) {
-					return 1;
+					return listOfCustomers.get(i);
 				} 
 			}
 		} catch(Exception e) {
 			
 		}
-		return 0;
+		return null;
 	}
 	
 	public static ArrayList<String> countdata(List<AllEvent> listOfEvents)

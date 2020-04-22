@@ -171,6 +171,11 @@ public class DRDao extends AbstractBaseDao {
 					eventCustomerMapping.setAllUser(listOfusers.get(j).getAllUser());
 					eventCustomerMapping.setEventCustomerMappingId(count);
 					eventCustomerMapping.setAllEvent(event);
+					eventCustomerMapping.setCounterBidAmount(0);
+					eventCustomerMapping.setCommitedPower(0);
+					eventCustomerMapping.setActualPower(0);
+					eventCustomerMapping.setCounterBidFlag("N");
+					eventCustomerMapping.setBidPrice(event.getExpectedPrice());
 					eventCustomerDto.setUserId(listOfusers.get(j).getAllUser().getUserId());
 					eventCustomerDto.setUserName(listOfusers.get(j).getAllUser().getFullName());
 					eventCustomerDto.setEventId(event.getEventId());
@@ -265,8 +270,8 @@ public class DRDao extends AbstractBaseDao {
 				listOfDates=cm.getDateFormatted(cell2.getStringCellValue());
 				allevent.setEventStartTime(listOfDates.get(0));
 				allevent.setEventEndTime(listOfDates.get(1));
-				alleventsetdto.setActualPower("0");
-				alleventsetdto.setCommittedPower("0");
+				alleventsetdto.setActualPower(null);
+				alleventsetdto.setCommittedPower(null);
 				alleventsetdto.setCounterBidCustomers(0);
 				alleventsetdto.setInvitedCustomers(0);
 				alleventsetdto.setNoResponseCustomers(0);
@@ -274,7 +279,7 @@ public class DRDao extends AbstractBaseDao {
 				alleventsetdto.setEndTime(listOfDates.get(1).toString());
 				alleventsetdto.setStartTime(listOfDates.get(0).toString());
 				alleventsetdto.setParticipatedCustomers(0);
-				alleventsetdto.setShortfall("0");
+				alleventsetdto.setShortfall(null);
 				allevent.setActualPower(0);
 				// allevent.setCommittedPower(0);
 				allevent.setCounterBidCustomers("0");
@@ -595,8 +600,12 @@ public class DRDao extends AbstractBaseDao {
 						EventCustomerDto eventcustomerdto = new EventCustomerDto();
 						eventcustomerdto.setUserId(listOfCustomers.get(k).getAllUser().getUserId());
 						eventcustomerdto.setUserName(listOfCustomers.get(k).getAllUser().getFullName());
-						eventcustomerdto.setActualPower(listOfCustomers.get(k).getActualPower());
+						if (new Double(listOfCustomers.get(k).getActualPower()) !=null) {
+							eventcustomerdto.setActualPower(listOfCustomers.get(k).getActualPower());	
+						}
+						if (new Double(listOfCustomers.get(k).getCommitedPower() )!=null) {
 						eventcustomerdto.setCommitments(listOfCustomers.get(k).getCommitedPower());
+						}
 						eventcustomerdto.setPrice(listOfCustomers.get(k).getBidPrice());
 						eventcustomerdto.setIsSelected("Y");
 						// eventCustomerDto.setActualPower(allevent.getActualPower());
@@ -768,6 +777,7 @@ public HashMap<String,Object> cancelEvent(int event) {
 					eventCustomerDto.setParticipationStatus("1"); //hardcoded
 					eventCustomerDto.setCommitments(allevent.getCommitedPower());
 					eventCustomerDto.setPrice(allevent.getExpectedPrice());
+				//	if (listOfCustomers.get(j).)
 					// eventCustomerDto.setEventId(event.getEventId());
 					listOfEventCustDto.add(eventCustomerDto);
 			}
@@ -779,22 +789,36 @@ public HashMap<String,Object> cancelEvent(int event) {
         		for (int j=0;j<listOfCustomers.size();j++) {
         			EventCustomerDto eventCustomerDto = new EventCustomerDto();
         			if (listOfEventCustomers.size() > 0) {
-        			if (CompareHelper.compareData(listOfEventCustomers, listOfCustomers.get(j).getAllUser().getUserId()) == 1) {
+        				
+        			if (CompareHelper.compareData(listOfEventCustomers, listOfCustomers.get(j).getAllUser().getUserId()) != null) 
+        			{
+        			EventCustomerMapping evtmap =CompareHelper.compareData(listOfEventCustomers, listOfCustomers.get(j).getAllUser().getUserId());
         				eventCustomerDto.setIsSelected("Y");
-        			} else {
-        				eventCustomerDto.setIsSelected("N");
-        			}
-        			}
+//        			} else {
+//        				eventCustomerDto.setIsSelected("N");
+//        			}
+        			
 					
 					eventCustomerDto.setUserId(listOfCustomers.get(j).getAllUser().getUserId());
 					eventCustomerDto.setUserName(listOfCustomers.get(j).getAllUser().getFullName());
 					eventCustomerDto.setActualPower(allevent.getActualPower());
-					eventCustomerDto.setParticipationStatus("1"); //hardcoded
-					eventCustomerDto.setCommitments(allevent.getCommitedPower());
-					eventCustomerDto.setPrice(allevent.getExpectedPrice());
+					if(evtmap.getEventCustomerStatusId() >= 3) {
+						eventCustomerDto.setParticipationStatus("1"); //hardcoded
+					} else {
+						eventCustomerDto.setParticipationStatus("0"); //hardcoded
+					}
+					if (evtmap.getCounterBidFlag() != null) {
+						eventCustomerDto.setCounterBidFlag(evtmap.getCounterBidFlag()); //hardcoded
+					} 
+					eventCustomerDto.setCouterBidAmount(evtmap.getCounterBidAmount()); //hardcoded
+					eventCustomerDto.setCommitments(evtmap.getCommitedPower());
+					eventCustomerDto.setPrice(evtmap.getBidPrice());
+					eventCustomerDto.setStatus(evtmap.getEventCustomerStatusId());
 					// eventCustomerDto.setEventId(event.getEventId());
 					listOfEventCustDto.add(eventCustomerDto);
+        			}
 			}	
+        	}
         	}
         
 		
@@ -804,7 +828,8 @@ public HashMap<String,Object> cancelEvent(int event) {
 		response.put("response", internalResponse);
 		response.put("customMessage", null);
 
-       }
+        	}
+        	
         
         
         catch (Exception e) {
@@ -841,8 +866,9 @@ public HashMap<String,Object> rejectCustomer(int eventId, int customerId) {
     	HashMap<String,Object> response=new HashMap<String, Object>();
     	
         try {
-        
+        EventCustomerMapping eventcustomermapping = eventcustomerrepo.getEventCustomerById(eventId,customerId);
         eventcustomerrepo.updateEventCustomerbyId(6, eventId, customerId);
+        eventrepo.removeEventPower(eventcustomermapping.getCommitedPower(), eventId);
         	response.put("responseStatus", "1");
 		response.put("responseMessage", "The request was successfully served.");
 		response.put("response", null);
@@ -869,9 +895,9 @@ public HashMap<String,Object> acceptCounterBid(int eventId, int customerId) {
 	HashMap<String,Object> response=new HashMap<String, Object>();
 	
     try {
-    EventCustomerMapping eventcustomermapping = eventcustomerrepo.getEventCustomerById(customerId);
+    EventCustomerMapping eventcustomermapping = eventcustomerrepo.getEventCustomerById(eventId,customerId);
     eventcustomerrepo.acceptCounterBid("Y",5, eventId, customerId);
-    eventrepo.updateEventPower(eventcustomermapping.getCommitedPower(), eventId);
+    eventrepo.addEventPower(eventcustomermapping.getCommitedPower(), eventId);
     	response.put("responseStatus", "1");
 	response.put("responseMessage", "The request was successfully served.");
 	response.put("response", null);

@@ -8,6 +8,27 @@ public class EventCustomerDto extends AbstractBaseDto{
 	private String isSelected;
 	private String participationStatus;
 	private double actualPower;
+	private String counterBidFlag;
+	private double couterBidAmount;
+	private int status;
+	public int getStatus() {
+		return status;
+	}
+	public void setStatus(int status) {
+		this.status = status;
+	}
+	public String getCounterBidFlag() {
+		return counterBidFlag;
+	}
+	public void setCounterBidFlag(String counterBidFlag) {
+		this.counterBidFlag = counterBidFlag;
+	}
+	public double getCouterBidAmount() {
+		return couterBidAmount;
+	}
+	public void setCouterBidAmount(double couterBidAmount) {
+		this.couterBidAmount = couterBidAmount;
+	}
 	public String getIsSelected() {
 		return isSelected;
 	}

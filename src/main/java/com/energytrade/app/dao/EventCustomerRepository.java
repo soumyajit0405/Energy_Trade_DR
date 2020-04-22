@@ -39,8 +39,8 @@ public interface EventCustomerRepository extends JpaRepository<EventCustomerMapp
 	  @Query("Select max(eventCustomerMappingId) from EventCustomerMapping a ") 
 	  int getEventCustomerCount();
 	  
-	  @Query("Select a from EventCustomerMapping a where a.eventCustomerMappingId=?1") 
-	  EventCustomerMapping getEventCustomerById(int eventCustomerId);
+	  @Query("Select a from EventCustomerMapping a where a.allEvent.eventId=?1 and a.allUser.userId=?2") 
+	  EventCustomerMapping getEventCustomerById(int eventId,int customerId);
 	 
 	  @Query("Select a from UserAccessLevelMapping a where a.userTypepl.userTypeId=2 and a.allUser.userId <> ?1") 
 	  List<UserAccessLevelMapping> getUserAccessLevel(int userId);
@@ -63,10 +63,10 @@ public interface EventCustomerRepository extends JpaRepository<EventCustomerMapp
 	  void updateEventCustomer(int statusId, int eventId);
 	  
 	  @Modifying
-	  @Query("update EventCustomerMapping set eventCustomerStatusId=?1 where allEvent.eventId=?2 and eventCustomerMappingId=?3") 
+	  @Query("update EventCustomerMapping set eventCustomerStatusId=?1 where allEvent.eventId=?2 and allUser.userId=?3") 
 	  void updateEventCustomerbyId(int statusId, int eventId, int eventCustomerMapId);
 	  
 	  @Modifying
-	  @Query("update EventCustomerMapping set counterBidFlag=?1,eventCustomerStatusId=?2 where allEvent.eventId=?3 and eventCustomerMappingId=?4") 
+	  @Query("update EventCustomerMapping set counterBidFlag=?1,eventCustomerStatusId=?2 where allEvent.eventId=?3 and allUser.userId=?4") 
 	  void acceptCounterBid(String status,int statusId, int eventId, int eventCustomerMapId);
 }

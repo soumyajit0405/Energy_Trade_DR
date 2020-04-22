@@ -24,13 +24,7 @@ public class EventCustomerMapping implements Serializable {
 	private byte activeStatus;
 
 	@Column(name="actual_power")
-	private Double actualPower;
-
-	@Column(name="counter_bid_flag")
-	private String counterBidFlag;
-	
-	@Column(name="counter_bid_amount")
-	private double counterBidAmount;
+	private double actualPower;
 	
 	public String getCounterBidFlag() {
 		return counterBidFlag;
@@ -44,9 +38,6 @@ public class EventCustomerMapping implements Serializable {
 		return counterBidAmount;
 	}
 
-	public void setCounterBidAmount(double counterBidAmount) {
-		this.counterBidAmount = counterBidAmount;
-	}
 
 	@Column(name="bid_price")
 	private double bidPrice;
@@ -56,7 +47,7 @@ public class EventCustomerMapping implements Serializable {
 	private Date bidTs;
 
 	@Column(name="commited_power")
-	private Double commitedPower;
+	private double commitedPower;
 
 	@Column(name="created_by")
 	private String createdBy;
@@ -69,7 +60,7 @@ public class EventCustomerMapping implements Serializable {
 	private String counterBidFlag;
 	
 	@Column(name="counter_bid_amount")
-	private Double counterBidAmount;
+	private double counterBidAmount;
 	
 	@Column(name="event_customer_status_id")
 	private int eventCustomerStatusId;
@@ -120,11 +111,11 @@ public class EventCustomerMapping implements Serializable {
 		this.activeStatus = activeStatus;
 	}
 
-	public Double getActualPower() {
+	public double getActualPower() {
 		return actualPower;
 	}
 
-	public void setActualPower(Double actualPower) {
+	public void setActualPower(double actualPower) {
 		this.actualPower = actualPower;
 	}
 
@@ -144,11 +135,11 @@ public class EventCustomerMapping implements Serializable {
 		this.bidTs = bidTs;
 	}
 
-	public Double getCommitedPower() {
+	public double getCommitedPower() {
 		return commitedPower;
 	}
 
-	public void setCommitedPower(Double commitedPower) {
+	public void setCommitedPower(double commitedPower) {
 		this.commitedPower = commitedPower;
 	}
 
@@ -168,19 +159,7 @@ public class EventCustomerMapping implements Serializable {
 		this.createdTs = createdTs;
 	}
 
-	public String getCounterBidFlag() {
-		return counterBidFlag;
-	}
-
-	public void setCounterBidFlag(String counterBidFlag) {
-		this.counterBidFlag = counterBidFlag;
-	}
-
-	public Double getCounterBidAmount() {
-		return counterBidAmount;
-	}
-
-	public void setCounterBidAmount(Double counterBidAmount) {
+	public void setCounterBidAmount(double counterBidAmount) {
 		this.counterBidAmount = counterBidAmount;
 	}
 

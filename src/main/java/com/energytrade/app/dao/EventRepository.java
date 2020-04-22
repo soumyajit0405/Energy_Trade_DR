@@ -55,6 +55,10 @@ public interface EventRepository extends JpaRepository<AllEvent, Long>
 	  List<AllEventSet> getupcomingEventSet(Date startDate);
 	 
 	 @Modifying
-	    @Query("update AllEvent a set a.commitedPower=?1 where a.eventId=?2")
-	     void updateEventPower(double power, int eventId);
+	    @Query("update AllEvent a set a.commitedPower=a.commitedPower+?1 where a.eventId=?2")
+	     void addEventPower(double power, int eventId);
+	 
+	 @Modifying
+	    @Query("update AllEvent a set a.commitedPower=a.commitedPower-?1 where a.eventId=?2")
+	     void removeEventPower(double power, int eventId);
 }
