@@ -60,5 +60,36 @@ public class DRCustomerController extends AbstractBaseController {
 				(int) inputDetails.get("eventSetId")));
 		return response;
 	}
+	
+	@RequestMapping(value = "getDRCustomerProfile", method = RequestMethod.POST, headers = "Accept=application/json")
+	public HashMap<String, Object> getDRCustomerProfile(@RequestBody HashMap<String, Object> inputDetails) {
 
+		HashMap<String, Object> response = new HashMap<String, Object>();
+		response.put("response", drCustomerService.getDRCustomerProfile((int) inputDetails.get("userId")));
+		return response;
+	}
+	
+	@RequestMapping(value = "updateDRCustomerDevice", method = RequestMethod.POST, headers = "Accept=application/json")
+	public HashMap<String, Object> updateDRCustomerDevice(@RequestBody HashMap<String, Object> inputDetails) {
+
+		HashMap<String, Object> response = new HashMap<String, Object>();
+		response.put("response", drCustomerService.updateDRCustomerDevice(inputDetails));
+		return response;
+	}
+	
+	@RequestMapping(value = "deleteDRCustomerDevice/{userDrDeviceId}", method = RequestMethod.DELETE, headers = "Accept=application/json")
+	public HashMap<String, Object> deleteDRCustomerDevice(@PathVariable("userDrDeviceId") int drDeviceId) {
+
+		HashMap<String, Object> response = new HashMap<String, Object>();
+		response.put("response", drCustomerService.deleteDrDevice(drDeviceId));
+		return response;
+	}
+	
+	@RequestMapping(value = "addDrDevice", method = RequestMethod.POST, headers = "Accept=application/json")
+	public HashMap<String, Object> addDrDevice(@RequestBody HashMap<String, Object> deviceDetails) {
+
+		HashMap<String, Object> response = new HashMap<String, Object>();
+		response.put("response", drCustomerService.addDrDevice(deviceDetails));
+		return response;
+	}
 }

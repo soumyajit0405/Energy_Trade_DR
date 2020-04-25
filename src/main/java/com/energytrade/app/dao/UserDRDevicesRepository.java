@@ -8,13 +8,7 @@ import com.energytrade.app.model.UserDRDevices;
 import com.energytrade.app.model.UserDevice;
 
 @Repository
-public interface UserDevicesRepository extends JpaRepository<UserDevice, Long> {
-
-	@Query("Select a from UserDevice a where a.userDeviceId=?1")
-	UserDevice getUserDevice(int userDeviceId);
-
-	@Query("Select a from UserDRDevices a where a.userDrDeviceId=?1")
-	UserDRDevices getUserDRDevice(int userDeviceId);
+public interface UserDRDevicesRepository extends JpaRepository<UserDRDevices, Long> {
 
 	@Query("Select max(a.userDrDeviceId) from UserDRDevices a")
 	int getDrDeviceCount();

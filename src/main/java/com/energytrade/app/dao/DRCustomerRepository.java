@@ -48,5 +48,17 @@ public interface DRCustomerRepository extends JpaRepository<AllUser, Long> {
 
 	@Query("Select a from AllUser a where a.phoneNumber=?1")
 	AllUser getUserIdByPhone(String phone);
+	
+	@Modifying
+	@Query("update UserDRDevices a set a.deviceName=?1,a.device_capacity=?2 where a.userDrDeviceId=?3")
+	void updateDrDeviceDetails(String deviceName, double deviceCapacity, int userDeviceId);
+	
+	@Modifying
+	@Query("delete UserDRDevices a where a.userDrDeviceId=?1")
+	void deleteDrDeviceDetails(int userDeviceId);
+	
+	@Modifying
+	@Query("delete EventCustomerDevices a where a.userDrDevice.userDrDeviceId=?1")
+	void deleteEventCustomerDevices(int userDeviceId);
 
 }

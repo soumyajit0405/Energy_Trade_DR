@@ -72,6 +72,10 @@ public class CustomMessages {
 		{
 			return "Registered Successfully";
 		}
+		else if(code.equalsIgnoreCase("FS"))
+		{
+			return "Fetched Successfully";
+		}
 		
 		else if(code.equalsIgnoreCase("IVC"))
 		{
