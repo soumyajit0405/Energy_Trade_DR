@@ -78,6 +78,18 @@ public class AllContract implements Serializable {
 	
 	@Column(name="energy")
 	private BigDecimal energy;
+	
+	@Column(name="is_fine_applicable")
+	private String isFineApplicable;
+	
+	public String getIsFineApplicable() {
+		return isFineApplicable;
+	}
+
+	public void setIsFineApplicable(String isFineApplicable) {
+		this.isFineApplicable = isFineApplicable;
+	}
+
 
 	public BigDecimal getEnergy() {
 		return energy;

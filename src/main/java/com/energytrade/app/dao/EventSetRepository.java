@@ -39,7 +39,7 @@ public interface EventSetRepository extends JpaRepository<AllEventSet, Long>
 	  @Query("Select a from AllEventSet a where a.eventSetId=?1 ") 
 	  AllEventSet getEventSet(int eventSetId);
 	  
-	  @Query("Select max(eventSetId) from AllEventSet a ") 
+	  @Query("Select COALESCE(max(eventSetId),0) from AllEventSet a ") 
 	  int getEventSetCount();
 	 
 	  @Query("Select count(a.userId) from AllUser a where a.phoneNumber=?1  and a.password=?2") 

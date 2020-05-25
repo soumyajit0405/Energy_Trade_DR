@@ -87,6 +87,17 @@ public class AllSellOrder implements Serializable {
 	@Column(name="cancel_reason")
 	private String cancelReason;
 
+	@Column(name="is_fine_applicable")
+	private String isFineApplicable;
+	
+	public String getIsFineApplicable() {
+		return isFineApplicable;
+	}
+
+	public void setIsFineApplicable(String isFineApplicable) {
+		this.isFineApplicable = isFineApplicable;
+	}
+
 
 	public String getCancelReason() {
 		return cancelReason;

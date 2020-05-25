@@ -36,7 +36,7 @@ public interface EventCustomerRepository extends JpaRepository<EventCustomerMapp
 {
       
 	  
-	  @Query("Select max(eventCustomerMappingId) from EventCustomerMapping a ") 
+	  @Query("Select COALESCE(max(eventCustomerMappingId),0) from EventCustomerMapping a ") 
 	  int getEventCustomerCount();
 	  
 	  @Query("Select a from EventCustomerMapping a where a.allEvent.eventId=?1 and a.allUser.userId=?2") 

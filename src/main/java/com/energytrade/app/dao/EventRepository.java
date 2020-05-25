@@ -32,7 +32,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 @Repository
 public interface EventRepository extends JpaRepository<AllEvent, Long>
 {
-	@Query("Select max(eventId) from AllEvent a ") 
+	@Query("Select COALESCE(max(eventId),0) from AllEvent a ") 
 	  int getEventCount();
 	
 	@Query("Select a from EventStatusPl a where  a.name=?1") 

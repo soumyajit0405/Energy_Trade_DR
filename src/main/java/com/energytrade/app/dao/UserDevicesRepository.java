@@ -16,7 +16,7 @@ public interface UserDevicesRepository extends JpaRepository<UserDevice, Long> {
 	@Query("Select a from UserDRDevices a where a.userDrDeviceId=?1")
 	UserDRDevices getUserDRDevice(int userDeviceId);
 
-	@Query("Select max(a.userDrDeviceId) from UserDRDevices a")
+	@Query("Select COALESCE(max(a.userDrDeviceId),0) from UserDRDevices a")
 	int getDrDeviceCount();
 
 }

@@ -85,7 +85,7 @@ public class DRCustomerController extends AbstractBaseController {
 		return response;
 	}
 	
-	@RequestMapping(value = "addDrDevice", method = RequestMethod.POST, headers = "Accept=application/json")
+	@RequestMapping(value = "addDRCustomerDevice", method = RequestMethod.POST, headers = "Accept=application/json")
 	public HashMap<String, Object> addDrDevice(@RequestBody HashMap<String, Object> deviceDetails) {
 
 		HashMap<String, Object> response = new HashMap<String, Object>();

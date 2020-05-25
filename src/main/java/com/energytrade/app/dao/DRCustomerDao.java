@@ -77,6 +77,18 @@ public class DRCustomerDao {
 			response.put("key", "200");
 			response.put("userId", alluser.getUserId());
 			response.put("userRole", alluser.getUserRolesPl().getUserRoleName());
+			response.put("name",alluser.getFullName());
+	    	   response.put("phoneNumber",alluser.getPhoneNumber());
+	    	   List<HashMap<String,String>> listOfAccessLevels = new ArrayList<>();
+	    	   if (alluser.getUserAccessMap() != null) {
+	    		   for (int i=0;i<alluser.getUserAccessMap().size();i++) {
+	    			   HashMap<String,String> userAccessLevel = new HashMap<>();
+	    			   userAccessLevel.put("accessLevel", alluser.getUserAccessMap().get(i).getUserTypepl().getUserTypeName());
+	    			   listOfAccessLevels.add(userAccessLevel);
+	    			   
+	    		   }
+	    	   response.put("userTypes", listOfAccessLevels);
+	    	   }
 		} catch (Exception e) {
 			System.out.println("Error in checkExistence" + e.getMessage());
 			e.printStackTrace();
@@ -225,7 +237,7 @@ public class DRCustomerDao {
 					   
 				   }
 			 }	   
-			 response.put("userRole", listOfAccessLevels);
+			 response.put("userType", listOfAccessLevels);
 			   if (alluser.getDrContractNumber() != null) {
 				   response.put("drContractNumber", alluser.getDrContractNumber());
 				} else {
