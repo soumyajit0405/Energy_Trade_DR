@@ -26,6 +26,13 @@ public class EventCustomerMapping implements Serializable {
 	@Column(name="actual_power")
 	private double actualPower;
 	
+	@Column(name="customer_fine")
+	private double customerFine;
+	
+	@Column(name="is_fine_applicable")
+	private String isFineApplicable;
+
+	
 	public String getCounterBidFlag() {
 		return counterBidFlag;
 	}
@@ -62,6 +69,23 @@ public class EventCustomerMapping implements Serializable {
 	@Column(name="counter_bid_amount")
 	private double counterBidAmount;
 	
+	public double getCustomerFine() {
+		return customerFine;
+	}
+
+	public void setCustomerFine(double customerFine) {
+		this.customerFine = customerFine;
+	}
+
+	public String getIsFineApplicable() {
+		return isFineApplicable;
+	}
+
+	public void setIsFineApplicable(String isFineApplicable) {
+		this.isFineApplicable = isFineApplicable;
+	}
+
+
 	@Column(name="event_customer_status_id")
 	private int eventCustomerStatusId;
 

@@ -69,4 +69,7 @@ public interface EventCustomerRepository extends JpaRepository<EventCustomerMapp
 	  @Modifying
 	  @Query("update EventCustomerMapping set counterBidFlag=?1,eventCustomerStatusId=?2 where allEvent.eventId=?3 and allUser.userId=?4") 
 	  void acceptCounterBid(String status,int statusId, int eventId, int eventCustomerMapId);
+	  
+	  @Query("Select a from EventCustomerMapping a where  a.allUser.userId=?1") 
+	  List<EventCustomerMapping> getEventCustomerByUserId(int customerId);
 }

@@ -29,6 +29,9 @@ public interface AllUserRepository extends JpaRepository<AllUser, Long>
     @Query("Select a from AllUser a where a.userId=?1")
     AllUser getUserById(int userId );
     
+    @Query("Select a from AllUser a where a.drContractNumber is not null")
+    List<AllUser> getAllDrCustomers( );
+    
     @Query("Select a from UserTypePl a where a.userTypeName=?1")
     UserTypePl getUserType(String type );
     

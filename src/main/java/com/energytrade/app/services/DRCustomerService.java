@@ -1,6 +1,7 @@
 package com.energytrade.app.services;
 
 import java.util.HashMap;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -62,6 +63,13 @@ public class DRCustomerService extends AbstractBaseService {
 	
 	public HashMap<String,Object> addDrDevice(HashMap<String,Object> deviceDetails) {
 		return this.drCustomerDao.addDrDevice(deviceDetails);
+	}
+	
+	public List<HashMap<String, Object>> getAllCustomers() {
+		return this.drCustomerDao.getAllCustomers();
+	}
+	public HashMap<String,Object> getEventCounts(int userId) {
+		return this.drCustomerDao.getEventCounts(userId);
 	}
 
 }

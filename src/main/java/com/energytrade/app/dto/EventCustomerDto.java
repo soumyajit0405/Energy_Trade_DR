@@ -11,6 +11,27 @@ public class EventCustomerDto extends AbstractBaseDto{
 	private String counterBidFlag;
 	private double couterBidAmount;
 	private int status;
+	private double customerFine;
+	private double earnings;
+	public double getEarnings() {
+		return earnings;
+	}
+	public void setEarnings(double earnings) {
+		this.earnings = earnings;
+	}
+	public double getCustomerFine() {
+		return customerFine;
+	}
+	public void setCustomerFine(double customerFine) {
+		this.customerFine = customerFine;
+	}
+	public String getIsFineApplicable() {
+		return isFineApplicable;
+	}
+	public void setIsFineApplicable(String isFineApplicable) {
+		this.isFineApplicable = isFineApplicable;
+	}
+	private String isFineApplicable;
 	public int getStatus() {
 		return status;
 	}

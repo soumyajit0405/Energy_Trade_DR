@@ -13,8 +13,22 @@ public class AllEventDto extends AbstractBaseDto{
 	private int participatedCustomers;
 	private int counterBidCustomers;
 	private String startTime;
+	private double buyerFine;
+	private String isFineApplicable;
 	
 	
+	public double getBuyerFine() {
+		return buyerFine;
+	}
+	public void setBuyerFine(double buyerFine) {
+		this.buyerFine = buyerFine;
+	}
+	public String getIsFineApplicable() {
+		return isFineApplicable;
+	}
+	public void setIsFineApplicable(String isFineApplicable) {
+		this.isFineApplicable = isFineApplicable;
+	}
 	public String getStartTime() {
 		return startTime;
 	}

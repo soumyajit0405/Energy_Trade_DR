@@ -34,6 +34,28 @@ public class AllEvent implements Serializable {
 
 	@Column(name="created_by")
 	private String createdBy;
+	
+	@Column(name="buyer_fine")
+	private double buyerFine;
+
+	@Column(name="is_fine_applicable")
+	private String isFineApplicable;
+
+	public double getBuyerFine() {
+		return buyerFine;
+	}
+
+	public void setBuyerFine(double buyerFine) {
+		this.buyerFine = buyerFine;
+	}
+
+	public String getIsFineApplicable() {
+		return isFineApplicable;
+	}
+
+	public void setIsFineApplicable(String isFineApplicable) {
+		this.isFineApplicable = isFineApplicable;
+	}
 
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="created_ts")

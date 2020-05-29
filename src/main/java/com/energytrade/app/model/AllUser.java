@@ -102,6 +102,19 @@ public class AllUser implements Serializable {
 	@OneToMany(mappedBy="allUser")
 	private List<AllOtp> allOtps;
 
+	
+	@JsonIgnore
+	//bi-directional many-to-one association to AllOtp
+	@OneToMany(mappedBy="allUser")
+	private List<UserDRDevices> userDrDevices;
+	
+	public List<UserDRDevices> getUserDrDevices() {
+		return userDrDevices;
+	}
+
+	public void setUserDrDevices(List<UserDRDevices> userDrDevices) {
+		this.userDrDevices = userDrDevices;
+	}
 
 	@JsonIgnore
 	//bi-directional many-to-one association to AllOtp

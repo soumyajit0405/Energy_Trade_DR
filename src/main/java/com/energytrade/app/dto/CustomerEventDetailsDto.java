@@ -21,6 +21,23 @@ public class CustomerEventDetailsDto extends AbstractBaseDto {
 	private Double expectedPrice;
 	private Date createdTs;
 	private CustomerEventMappingDetailsDto eventCustomerDetails;
+	private Double buyerFine;
+	private String isFineApplicable;
+	
+	
+	public Double getBuyerFine() {
+		return buyerFine;
+	}
+	public void setBuyerFine(Double buyerFine) {
+		this.buyerFine = buyerFine;
+	}
+	public String getIsFineApplicable() {
+		return isFineApplicable;
+	}
+	public void setIsFineApplicable(String isFineApplicable) {
+		this.isFineApplicable = isFineApplicable;
+	}
+
 
 	public int getEventId() {
 		return eventId;

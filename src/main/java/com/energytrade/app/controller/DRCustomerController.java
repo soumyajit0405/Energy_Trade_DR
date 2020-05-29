@@ -92,4 +92,20 @@ public class DRCustomerController extends AbstractBaseController {
 		response.put("response", drCustomerService.addDrDevice(deviceDetails));
 		return response;
 	}
+	
+	@RequestMapping(value = "getAllCustomers", method = RequestMethod.GET, headers = "Accept=application/json")
+	public HashMap<String, Object> getAllCustomers() {
+
+		HashMap<String, Object> response = new HashMap<String, Object>();
+		response.put("response", drCustomerService.getAllCustomers());
+		return response;
+	}
+	
+	@RequestMapping(value = "fetchEventCounts/{userId}", method = RequestMethod.GET, headers = "Accept=application/json")
+	public HashMap<String, Object> getEventCounts(@PathVariable("userId") int userId) {
+
+		HashMap<String, Object> response = new HashMap<String, Object>();
+		response.put("response", drCustomerService.getEventCounts(userId));
+		return response;
+	}
 }

@@ -20,6 +20,7 @@ import com.energytrade.app.model.UserDRDevices;
 import com.energytrade.app.model.UserDevice;
 import com.energytrade.app.model.UserRolesPl;
 import com.energytrade.app.model.UserTypePl;
+import com.energytrade.app.util.CompareHelper;
 import com.energytrade.app.util.CustomMessages;
 import com.energytrade.app.dto.AllEventSetDto;
 import com.energytrade.app.dto.CustomerEventDetailsDto;
@@ -44,6 +45,9 @@ public class DRCustomerDao {
 	
 	@Autowired
 	UserDRDevicesRepository userdrdevicerepo;
+	
+	@Autowired
+	EventCustomerRepository eventCustomerRepo;
 
 	public HashMap<String, Object> getBusinessContractDetails(String contractNumber) {
 		HashMap<String, Object> response = new HashMap<String, Object>();
@@ -162,6 +166,13 @@ public class DRCustomerDao {
 				customerEventDetails.setActualPower(cusomterEvents.get(i).getActualPower());
 				customerEventDetails.setExpectedPrice(cusomterEvents.get(i).getExpectedPrice());
 				customerEventDetails.setCreatedTs(cusomterEvents.get(i).getCreatedTs());
+				if (cusomterEvents.get(i).getIsFineApplicable() != null) {
+					customerEventDetails.setIsFineApplicable(cusomterEvents.get(i).getIsFineApplicable());
+				} 
+				
+				if (Double.valueOf(cusomterEvents.get(i).getBuyerFine()) != null) {
+					customerEventDetails.setBuyerFine(cusomterEvents.get(i).getBuyerFine());
+				} 
 				// customerEventDetails.setAllCustomerDevices(drCustomerRepo.getAllUserDevices(customerId));
 				EventCustomerMapping ecm = drCustomerRepo.getEventCustomerMapping(customerId,
 						cusomterEvents.get(i).getEventId());
@@ -175,6 +186,13 @@ public class DRCustomerDao {
 				cem.setCounterBidFlag(ecm.getCounterBidFlag());
 				cem.setCounterBidAmount(ecm.getCounterBidAmount());
 				cem.setCreatedTs(ecm.getCreatedTs());
+				if (ecm.getIsFineApplicable() != null) {
+					cem.setIsFineApplicable(ecm.getIsFineApplicable());
+				} 
+				
+				if (Double.valueOf(ecm.getCustomerFine()) != null) {
+					cem.setCustomerFine(ecm.getCustomerFine());
+				} 
 				List<UserDRDevices> udd = drCustomerRepo.getuserMappedDevices(ecm.getEventCustomerMappingId());
 				
 				List<DRDeviceDto> mappedDevices = new ArrayList<DRDeviceDto>();
@@ -269,6 +287,44 @@ public class DRCustomerDao {
 		return response;
 	}
 	
+	
+	public List<HashMap<String, Object>> getAllCustomers() {
+		
+		List<HashMap<String, Object>> userList = new ArrayList<>();
+		try {
+			List<AllUser> users = alluserrepo.getAllDrCustomers();
+			for (AllUser user: users) {
+				double capacity =0;
+				HashMap<String, Object> response = new HashMap<String, Object>();
+				response.put("customerId",user.getUserId());
+				response.put("customerName",user.getFullName());
+				response.put("customerType","");
+				response.put("contactNumber",user.getPhoneNumber());
+				if (user.getUserDrDevices() != null) {
+					response.put("energyAssets",user.getUserDrDevices().size());
+					for (UserDRDevices device:user.getUserDrDevices()) {
+						capacity = capacity + device.getDevice_capacity();
+					}
+					response.put("flexibleCapacity",capacity);
+				} else {
+					response.put("energyAssets",0);
+					response.put("flexibleCapacity",0);
+				}
+			userList.add(response);	
+			}	
+			
+			
+		} catch (Exception e) {
+			System.out.println("Error in checkExistence" + e.getMessage());
+			e.printStackTrace();
+			HashMap<String, Object> response = new HashMap<String, Object>();
+			response.put("message", CustomMessages.getCustomMessages("ISE"));
+			response.put("key", "500");
+			userList.add(response);
+		}
+		return userList;
+	}
+	
 	public HashMap<String, Object> updateDRCustomerDevice(HashMap<String,Object> inputDetails) {
 
 		HashMap<String, Object> response = new HashMap<String, Object>();
@@ -337,7 +393,56 @@ public class DRCustomerDao {
         }
         return response;
     }
+
     
+    public HashMap<String,Object> getEventCounts(int userId) {
+        
+    	HashMap<String,Object> response=new HashMap<String, Object>();
+    	int createdEvents=0,publishedEvents=0,completedEvents=0,cancelledEvents =0,gateClosedEvents=0,expiredEvents=0,lockedEvents=0,liveEvents=0;
+    	try {
+        	List<EventCustomerMapping> eventCustomerMappings=eventCustomerRepo.getEventCustomerByUserId(userId);
+        	for (EventCustomerMapping evmp: eventCustomerMappings) {
+        		if (evmp.getAllEvent().getEventStatusPl().getEventStatusId()== 1) {
+        			createdEvents++;
+        		} else if (evmp.getAllEvent().getEventStatusPl().getEventStatusId()== 2) {
+        			publishedEvents++;
+        		}else if (evmp.getAllEvent().getEventStatusPl().getEventStatusId()== 3) {
+        			completedEvents++;
+        		}else if (evmp.getAllEvent().getEventStatusPl().getEventStatusId()== 4) {
+        			cancelledEvents++;
+        		}else if (evmp.getAllEvent().getEventStatusPl().getEventStatusId()== 5) {
+        			gateClosedEvents++;
+        		}else if (evmp.getAllEvent().getEventStatusPl().getEventStatusId()== 6) {
+        			expiredEvents++;
+        		}else if (evmp.getAllEvent().getEventStatusPl().getEventStatusId()== 7) {
+        			lockedEvents++;
+        		}else if (evmp.getAllEvent().getEventStatusPl().getEventStatusId()== 8) {
+        			liveEvents++;
+        		}
+        	}
+        	
+        	response.put("liveEvents", liveEvents);
+        	response.put("lockedEvents", lockedEvents);
+        	response.put("expiredEvents", expiredEvents);
+        	response.put("gateClosedEvents", gateClosedEvents);
+        	response.put("cancelledEvents", cancelledEvents);
+        	response.put("cancelledEvents", cancelledEvents);
+        	response.put("publishedEvents", publishedEvents);
+        	response.put("createdEvents", createdEvents);
+        	response.put("message",CustomMessages.getCustomMessages("SUC"));
+      	   	response.put("key","200");
+        	
+        }
+        catch (Exception e) {
+            System.out.println("Error in checkExistence" + e.getMessage());
+            e.printStackTrace();
+            response.put("message",CustomMessages.getCustomMessages("ISE"));
+     	   response.put("key","500");
+           
+        }
+        return response;
+    }
+
 
 }
 

@@ -21,8 +21,28 @@ public class CustomerEventMappingDetailsDto extends AbstractBaseDto {
 	private Double counterBidAmount;
 	private Date createdTs;
 	private List<DRDeviceDto> mappedDevices;
+	private double customerFine;
+	private double earnings;
+	private String isFineApplicable;
 
-	
+	public double getEarnings() {
+		return earnings;
+	}
+	public void setEarnings(double earnings) {
+		this.earnings = earnings;
+	}
+	public double getCustomerFine() {
+		return customerFine;
+	}
+	public void setCustomerFine(double customerFine) {
+		this.customerFine = customerFine;
+	}
+	public String getIsFineApplicable() {
+		return isFineApplicable;
+	}
+	public void setIsFineApplicable(String isFineApplicable) {
+		this.isFineApplicable = isFineApplicable;
+	}
 
 	public int getEventCustomerMappingId() {
 		return eventCustomerMappingId;
