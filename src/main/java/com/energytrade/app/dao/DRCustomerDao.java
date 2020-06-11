@@ -293,11 +293,13 @@ public class DRCustomerDao {
 				ddd.setDrDeviceId(aud.get(i).getUserDrDeviceId());
 				ddd.setDrDeviceName(aud.get(i).getDeviceName());
 				ddd.setPortNumber(aud.get(i).getPortNumber());
+				if (!aud.get(i).getPortNumber().equalsIgnoreCase("NA")) {
 				AllKiotSwitch kiotSwitch= allKiotSwithcesRepo.getAllKiotSwitchesById(Integer.parseInt((aud.get(i).getPortNumber())));
 				ddd.setCustomData(kiotSwitch.getCustomData());
 				ddd.setKiotDeviceId(Integer.toString(kiotSwitch.getId()));
 				ddd.setUsedFlag(kiotSwitch.getUsedFlag());
 				ddd.setDeviceName(kiotSwitch.getDeviceCustomName());
+				}
 				userDRdevices.add(ddd);
 			}
 			response.put("drCustomerDevice", userDRdevices);
