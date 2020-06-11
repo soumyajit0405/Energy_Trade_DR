@@ -349,6 +349,15 @@ public class DRCustomerDao {
 					response.put("companyName", drcontracts.getCompnayName());
 					response.put("companyAddress", drcontracts.getCompanyAddress());
 					response.put("type", drcontracts.getCompanyType());
+				} else {
+					response.put("division", null);
+					response.put("contractAccount", null);
+					response.put("meterNumber", null);
+					response.put("sL", null);
+					response.put("billedMus", null);
+					response.put("companyName", null);
+					response.put("companyAddress", null);
+					response.put("type", null);
 				}
 				userList.add(response); 
 			}
