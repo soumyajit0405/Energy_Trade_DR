@@ -28,8 +28,8 @@ public class DRController extends AbstractBaseController
     @Autowired
     private DRService drservice;
     
-	@RequestMapping(value=REST+"uploadEventSet/{location}/{userId}",method = RequestMethod.POST,headers="Accept=application/json")
-    public HashMap<String,Object>  uploadEventSet(@RequestBody HashMap<String,String> inputDetails, @PathVariable("location") String location, @PathVariable("userId") int userId)
+	@RequestMapping(value=REST+"uploadEventSet/{location}/{userId}/{uploadDate}",method = RequestMethod.POST,headers="Accept=application/json")
+    public HashMap<String,Object>  uploadEventSet(@RequestBody HashMap<String,String> inputDetails, @PathVariable("location") String location, @PathVariable("userId") int userId,@PathVariable("uploadDate") String uploadDate)
     {
 		HashMap<String,Object> response = new HashMap<String, Object>();
         try
@@ -38,9 +38,9 @@ public class DRController extends AbstractBaseController
             //This will decode the String which is encoded by using Base64 class
             byte[] imageByte=Base64.decodeBase64(imageDataArr);
             
-          String directory="/home/"+"sample.xlsx";
-         //   String directory="C:\\Soumyajit\\ET-files-20200417T033846Z-001\\ET-files\\EnergyTrade-DR\\"+"sample.xlsx";
-            response =  drservice.createEventSet(directory, imageByte,location, userId);
+            String directory="/home/"+"sample.xlsx";
+            //String directory="C:\\Soumyajit\\ET-files-20200417T033846Z-001\\ET-files\\EnergyTrade-DR\\"+"sample.xlsx";
+            response =  drservice.createEventSet(directory, imageByte,location, userId, uploadDate);
             
         }
         catch(Exception e)
@@ -122,6 +122,13 @@ public class DRController extends AbstractBaseController
     	return response;
     }
     
+    @RequestMapping(value =REST+"rejectCounterBid" , method =  RequestMethod.POST , headers =  "Accept=application/json" )
+    public HashMap<String,Object> rejectCounterBid(@RequestBody HashMap<String,Object> events) {
+    	HashMap<String,Object> response=new HashMap<String, Object>();
+    	response.put("response", drservice.rejectCounterBid((int)events.get("eventId"),(int)events.get("eventCustomerId")));
+    	return response;
+    }
+    
     @RequestMapping(value =REST+"acceptCounterBid" , method =  RequestMethod.POST , headers =  "Accept=application/json" )
     public HashMap<String,Object> acceptCounterBid(@RequestBody HashMap<String,Object> events) {
     	HashMap<String,Object> response=new HashMap<String, Object>();
@@ -135,4 +142,12 @@ public class DRController extends AbstractBaseController
     	response.put("response", drservice.cancelEvent((int)events.get("eventId")));
     	return response;
     }
+    
+    @RequestMapping(value =REST+"getEventSets" , method =  RequestMethod.POST , headers =  "Accept=application/json" )
+    public HashMap<String,Object> getEventSetsByUser(@RequestBody HashMap<String,Object> events) throws ParseException {
+    	HashMap<String,Object> response=new HashMap<String, Object>();
+    	response.put("response", drservice.getEventSetsByUser((int)events.get("userId")));
+    	return response;
+    }
+    
 }

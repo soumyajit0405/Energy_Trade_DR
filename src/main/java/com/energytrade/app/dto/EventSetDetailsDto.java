@@ -16,6 +16,15 @@ public class EventSetDetailsDto extends AbstractBaseDto {
 	private String eventSetName;
 	private List<EventSetEventDto> events;
 	private Date createdTs;
+	private Date eventSetDate;
+
+	public Date getEventSetDate() {
+		return eventSetDate;
+	}
+
+	public void setEventSetDate(Date eventSetDate) {
+		this.eventSetDate = eventSetDate;
+	}
 
 	public int getEventSetId() {
 		return eventSetId;

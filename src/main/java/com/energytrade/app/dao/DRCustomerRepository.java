@@ -60,5 +60,13 @@ public interface DRCustomerRepository extends JpaRepository<AllUser, Long> {
 	@Modifying
 	@Query("delete EventCustomerDevices a where a.userDrDevice.userDrDeviceId=?1")
 	void deleteEventCustomerDevices(int userDeviceId);
+	
+	
+	@Query("select a from  UserDRDevices a where a.userDrDeviceId=?1")
+	UserDRDevices getDrDeviceDetails(int userDeviceId);
+	
+	@Modifying
+	@Query("update AllKiotSwitch set usedFlag='N' where id=?1")
+	void updateKiotSwitch(int kiotSwitchId);
 
 }

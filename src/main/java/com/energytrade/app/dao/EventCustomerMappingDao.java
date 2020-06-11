@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.energytrade.app.model.AllEvent;
 import com.energytrade.app.model.EventCustomerDevices;
 import com.energytrade.app.model.EventCustomerMapping;
 import com.energytrade.app.model.UserDRDevices;
@@ -25,6 +26,12 @@ public class EventCustomerMappingDao extends AbstractBaseDao {
 
 	@Autowired
 	EventCustomerDevicesRepository eventCustomerDevicesRepository;
+	
+	@Autowired
+	EventRepository eventRepository;
+	
+	@Autowired
+	EventSetRepository eventSetRepository;
 
 	public HashMap<String, Object> participateInEvent(HashMap<String, Object> inputDetails) {
 		HashMap<String, Object> response = new HashMap<String, Object>();
@@ -34,6 +41,12 @@ public class EventCustomerMappingDao extends AbstractBaseDao {
 		ArrayList<Integer> deviceList = (ArrayList<Integer>) inputDetails.get("devices");
 
 		try {
+			AllEvent event = eventRepository.getEventById(eventId);
+			if (event.getCommitedPower()+committedPower > event.getPlannedPower()) {
+				response.put("message", "Power Committed is already more than Planned Power");
+				response.put("key", "200");
+				return response;
+			}
 			eventCustomerMappingRepo.participateInEvent(userId, eventId, committedPower);
 			ArrayList<EventCustomerDevices> eventCustomerDevicesList = new ArrayList<EventCustomerDevices>();
 			EventCustomerMapping eventCustomerMapping = eventCustomerMappingRepo.getEventCustomerMapping(eventId,
@@ -47,6 +60,8 @@ public class EventCustomerMappingDao extends AbstractBaseDao {
 
 			}
 			eventCustomerDevicesRepository.saveAll(eventCustomerDevicesList);
+			eventRepository.addEventPower(committedPower, eventId);
+			eventSetRepository.addCommittedPower(committedPower, event.getAllEventSet().getEventSetId());	
 			response.put("message", CustomMessages.getCustomMessages("SUC"));
 			response.put("key", "200");
 		} catch (Exception e) {
@@ -94,7 +109,16 @@ public class EventCustomerMappingDao extends AbstractBaseDao {
 	public HashMap<String, Object> withdrawFromEvent(int userId, int eventId) {
 		HashMap<String, Object> response = new HashMap<String, Object>();
 		try {
+			EventCustomerMapping evmt= eventCustomerMappingRepo.getEventCustomerMapping(eventId, userId);
+			AllEvent event = eventRepository.getEventById(eventId);
+			if (event.getEventStatusPl().getEventStatusId()>=3) {
+				response.put("message", "Event is not in either published or created state. So cannot withdraw");
+				response.put("key", "200");
+				return response;
+			}
 			eventCustomerMappingRepo.withdrawFromEvent(userId, eventId);
+			eventRepository.removeEventPower(evmt.getCommitedPower(),eventId);
+			eventSetRepository.removeCommittedPower(evmt.getCommitedPower(), event.getAllEventSet().getEventSetId());
 			response.put("message", CustomMessages.getCustomMessages("SUC"));
 			response.put("key", "200");
 		} catch (Exception e) {

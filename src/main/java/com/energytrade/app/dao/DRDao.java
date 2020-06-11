@@ -26,6 +26,7 @@ import com.energytrade.app.dto.AllEventDto;
 import com.energytrade.app.dto.AllEventSetDto;
 import com.energytrade.app.dto.EventCustomerDto;
 import com.energytrade.app.model.AllContract;
+import com.energytrade.app.model.AllDso;
 import com.energytrade.app.model.AllEvent;
 import com.energytrade.app.model.AllEventSet;
 import com.energytrade.app.model.AllForecast;
@@ -68,16 +69,39 @@ public class DRDao extends AbstractBaseDao {
 
 	@Autowired
 	AllUserRepository alluserrepo;
+	
+	@Autowired
+	AllDsoRepository alldsoRepo;
 
 	@Autowired
 	EventCustomerRepository eventcustomerrepo;
 
-	public HashMap<String, Object> createEventSet(String filePath, byte[] imageByte, String location, int userId) {
+	public HashMap<String, Object> createEventSet(String filePath, byte[] imageByte, String location, int userId, String date) {
 
 		HashMap<String, Object> response = new HashMap<String, Object>();
 		HashMap<String, Object> internalresponse = new HashMap<String, Object>();
 		try {
-			ArrayList<Object> eventSetObjects = createEventSet(location, userId);
+			Date today = new Date();
+			DateFormat targetFormat = new SimpleDateFormat("yyyy-MM-dd");
+			Date formatDate = targetFormat.parse(date);
+			String todates= targetFormat.format(today);
+			Date toDate = targetFormat.parse(todates);
+			if (toDate.compareTo(formatDate) > 0) {
+				response.put("responseStatus", "1");
+				response.put("responseMessage", "Uploaded Date is before Current Date");
+				response.put("response", internalresponse);
+				response.put("customMessage", null);
+				return response;
+			}
+			if (eventsetrepo.getEventSetCountPerDay(formatDate, userId) > 0) {
+				response.put("responseStatus", "1");
+				response.put("responseMessage", "File already uploaded with same date and user");
+				response.put("response", internalresponse);
+				response.put("customMessage", null);
+				return response;
+			}
+			
+			ArrayList<Object> eventSetObjects = createEventSetData(location, userId, date);
 			AllEventSetDto allEventSets = (AllEventSetDto) eventSetObjects.get(0);
 			// allEventSets.set
 			// internalresponse.put("eventSet", eventSetObjects.get(0));
@@ -85,7 +109,7 @@ public class DRDao extends AbstractBaseDao {
 			allEventSets.setAllEvents(listOfEvents);
 			ArrayList<String> powerAndPrice = getPower(listOfEvents);
 			allEventSets.setPlannedPower(powerAndPrice.get(0));
-			allEventSets.setTotlaPrice(powerAndPrice.get(1));
+			allEventSets.setTotalPrice(powerAndPrice.get(1));
 			allEventSets.setActualPower("0");
 			allEventSets.setCancelledEvents("0");
 			allEventSets.setCompletedEvents("0");
@@ -114,28 +138,26 @@ public class DRDao extends AbstractBaseDao {
 		return response;
 	}
 
-	public ArrayList<Object> createEventSet(String location, int userId) {
+	public ArrayList<Object> createEventSetData(String location, int userId, String uploadDate) {
 		AllEventSet alleventset1 = new AllEventSet();
 		AllEventSetDto alleventsetdto = new AllEventSetDto();
 		ArrayList<Object> listOfObjects = new ArrayList<Object>();
 		try {
 			int count = eventsetrepo.getEventSetCount() + 1;
-			Date d = new Date();
-			int year = d.getYear();
-			int month = d.getMonth();
-			int date = d.getDate();
-			Timestamp ts = new Timestamp(System.currentTimeMillis());
+			DateFormat targetFormat = new SimpleDateFormat("yyyy-MM-dd");
+			Date formatDate = targetFormat.parse(uploadDate);
+			Timestamp ts = new Timestamp(formatDate.getTime());
 			AllUser alluser = eventsetrepo.getUserById(userId);
 			AllEventSet alleventset = new AllEventSet();
-
+			String dateArr[]=uploadDate.split("-");
 			EventSetStatusPl eventsetstatuspl = eventsetrepo.getEventSetStatus("Created");
-			alleventset.setName(location + year + month + date);
+			alleventset.setName(dateArr[0]+dateArr[1]+dateArr[2]+location );
 			alleventset.setAllUser(alluser);
 			alleventset.setEventSetId(count);
 			alleventset.setEventSetStatusPl(eventsetstatuspl);
 			alleventset.setUploadTime(ts);
-			alleventset.setDate(new Date());
-			alleventsetdto.setEventSetName(location + year + month + date);
+			alleventset.setDate(formatDate);
+			alleventsetdto.setEventSetName(dateArr[0]+dateArr[1]+dateArr[2]+location );
 			alleventsetdto.setUserId(alluser.getUserId());
 			alleventsetdto.setUserName(alluser.getFullName());
 			alleventsetdto.setEventSetId(count);
@@ -143,7 +165,6 @@ public class DRDao extends AbstractBaseDao {
 			alleventsetdto.setDateOfOccurence(ts.toString());
 			eventsetrepo.saveAndFlush(alleventset);
 			alleventset1 = eventsetrepo.getEventSet(count);
-			alleventsetdto.setDateOfOccurence(ts.toString());
 			listOfObjects.add(alleventsetdto);
 			listOfObjects.add(alleventset1);
 			// return alleventset1;
@@ -176,6 +197,8 @@ public class DRDao extends AbstractBaseDao {
 				eventCustomerMapping.setCounterBidAmount(0);
 				eventCustomerMapping.setCommitedPower(0);
 				eventCustomerMapping.setActualPower(0);
+				eventCustomerMapping.setCustomerNetMeterReadinge(0);
+				eventCustomerMapping.setCustomerNetMeterReadings(0);
 				eventCustomerMapping.setCounterBidFlag("N");
 				eventCustomerMapping.setBidPrice(event.getExpectedPrice());
 				eventCustomerDto.setUserId(listOfusers.get(j).getAllUser().getUserId());
@@ -183,9 +206,10 @@ public class DRDao extends AbstractBaseDao {
 				eventCustomerDto.setEventId(event.getEventId());
 				eventCustomerDto.setIsSelected("Y");
 				eventCustomerMapping.setCustomerFine(0);
+				eventCustomerMapping.setIsFineApplicable("N");
 				eventCustomerMapping.setEventCustomerStatusId(1);
 				// eventCustomerDto.setActualPower(allevent.getActualPower());
-				eventCustomerDto.setParticipationStatus("1");
+				// eventCustomerDto.setParticipationStatus();
 				listOfEventCustDto.add(eventCustomerDto);
 				listOfEventCustMapping.add(eventCustomerMapping);
 			}
@@ -220,6 +244,8 @@ public class DRDao extends AbstractBaseDao {
 
 		List<AllEventDto> listOfEventsDto = new ArrayList<AllEventDto>();
 		List<AllEvent> listOfEvents = new ArrayList<>();
+		 final long HOUR = 3600*1000; // in milli-seconds.
+		Date now = new Date();
 		try {
 			XSSFWorkbook workbook = new XSSFWorkbook(file);
 			CommonUtility cm = new CommonUtility();
@@ -244,25 +270,41 @@ public class DRDao extends AbstractBaseDao {
 				Iterator<Cell> cellIterator = row.cellIterator();
 //                 Cell cell1= row.getCell(0);
 //                 System.out.println(cell1.getStringCellValue());
-				Cell cell2 = row.getCell(1);
+				Cell cell2 = row.getCell(0);
 				System.out.println(cell2.getStringCellValue());
-				Cell cell3 = row.getCell(2);
+				Cell cell3 = row.getCell(1);
 				System.out.println(cell3.getNumericCellValue());
-				Cell cell4 = row.getCell(3);
+				Cell cell4 = row.getCell(2);
 				if (cell4 != null) {
 					System.out.println(cell4.getNumericCellValue());
 				}
+				 final long ONE_MINUTE_IN_MILLIS=60000;//millisecs
+				  final long HALFHOUR = 1800*1000;
+			        Date d1=new Date(new Date().getTime() +5*HOUR+HALFHOUR - 5*ONE_MINUTE_IN_MILLIS);
+			      
+				Date afterHour = new Date(now.getTime() +5*HOUR+HALFHOUR+ 1 * HOUR);
+
+				listOfDates = CommonUtility.getDateFormatted(cell2.getStringCellValue(),alleventset.getDate() );
+				if(listOfDates.get(0).compareTo(afterHour) < 0) {
+					continue;
+				}
 				alleventsetdto.setEventId(rowCount);
-				alleventsetdto.setEventName(alleventset.getName() + count);
+				if (count < 10) {
+					alleventsetdto.setEventName(alleventset.getName() +"0"+ count);
+					allevent.setEventName(alleventset.getName() +"0"+ count);
+				} else {
+					alleventsetdto.setEventName(alleventset.getName() + count);
+					allevent.setEventName(alleventset.getName() + count);
+				}
 				alleventsetdto.setEventSetId(alleventset.getEventSetId());
 				alleventsetdto.setEventStatus(eventstatuspl.getName());
-
 				allevent.setEventId(rowCount);
-				allevent.setEventName(alleventset.getName() + count);
 				allevent.setAllEventSet(alleventset);
 				allevent.setEventStatusPl(eventstatuspl);
 				allevent.setPlannedPower(cell3.getNumericCellValue());
 				allevent.setBuyerFine(0);
+				allevent.setDsoNetMeterReadinge(0);
+				allevent.setDsoNetMeterReadings(0);
 				alleventsetdto.setPlannedPower(Double.toString(cell3.getNumericCellValue()));
 				if (cell4 != null) {
 					allevent.setExpectedPrice(cell4.getNumericCellValue());
@@ -271,7 +313,7 @@ public class DRDao extends AbstractBaseDao {
 					allevent.setExpectedPrice(0);
 					alleventsetdto.setPrice("0");
 				}
-				listOfDates = cm.getDateFormatted(cell2.getStringCellValue());
+				
 				allevent.setEventStartTime(listOfDates.get(0));
 				allevent.setEventEndTime(listOfDates.get(1));
 				alleventsetdto.setActualPower(null);
@@ -285,6 +327,7 @@ public class DRDao extends AbstractBaseDao {
 				alleventsetdto.setParticipatedCustomers(0);
 				alleventsetdto.setShortfall(null);
 				allevent.setActualPower(0);
+				allevent.setIsFineApplicable("N");
 				// allevent.setCommittedPower(0);
 				allevent.setCounterBidCustomers("0");
 				allevent.setInvitedCustomers(0);
@@ -292,6 +335,7 @@ public class DRDao extends AbstractBaseDao {
 				allevent.setParticipatedCustomers(0);
 				allevent.setParticipatedCustomers(0);
 				alleventsetdto.setShortfall("0");
+				alleventsetdto.setIsFineApplicable("N");
 				eventrepo.saveAndFlush(allevent);
 				List<EventCustomerDto> listOfCustomers = createEventCustomer(allevent);
 				alleventsetdto.setListOfCustomers(listOfCustomers);
@@ -334,9 +378,10 @@ public class DRDao extends AbstractBaseDao {
 
 		HashMap<String, Object> response = new HashMap<String, Object>();
 		try {
-
+			int participationCount=0, noResponseCount=0,counterBid=0, notifiedCount=0;
 			List<AllEventDto> listOfEventsdto = new ArrayList<AllEventDto>();
 			for (int i = 0; i < eventId.size(); i++) {
+				participationCount=0;  noResponseCount=0; counterBid=0; notifiedCount=0;
 				AllEvent allevent = eventrepo.getEventById(eventId.get(i));
 				AllEventDto alleventdto = new AllEventDto();
 				alleventdto.setEventId(allevent.getEventId());
@@ -363,9 +408,31 @@ public class DRDao extends AbstractBaseDao {
 					evdto.setActualPower(allevent.getActualPower());
 					evdto.setCommitments(allevent.getCommitedPower());
 					evdto.setPrice(allevent.getEventCustomerMappings().get(j).getBidPrice());
+					evdto.setStatus(allevent.getEventCustomerMappings().get(j).getEventCustomerStatusId());
 					evdto.setIsSelected("Y");
 					// eventCustomerDto.setActualPower(allevent.getActualPower());
-					evdto.setParticipationStatus("1");
+					if (allevent.getEventCustomerMappings().get(j).getEventCustomerStatusId() == 3 || allevent.getEventCustomerMappings().get(j).getEventCustomerStatusId() == 5 || allevent.getEventCustomerMappings().get(j).getEventCustomerStatusId() == 8 || allevent.getEventCustomerMappings().get(j).getEventCustomerStatusId() == 10) {
+						evdto.setParticipationStatus("1");	
+						participationCount++;
+					}
+					
+					else if (allevent.getEventCustomerMappings().get(j).getEventCustomerStatusId() == 4) {
+							
+						counterBid++;
+						
+					}
+					
+					else if (allevent.getEventCustomerMappings().get(j).getEventCustomerStatusId() != 1 && allevent.getEventCustomerMappings().get(j).getEventCustomerStatusId() !=9) {
+						
+						notifiedCount++;
+						noResponseCount++;
+					} 
+					
+					else if (allevent.getEventCustomerMappings().get(j).getEventCustomerStatusId() == 1) {
+						
+						noResponseCount++;
+					} 
+					
 					if (allevent.getEventCustomerMappings().get(j).getIsFineApplicable() != null) {
 						evdto.setIsFineApplicable(allevent.getEventCustomerMappings().get(j).getIsFineApplicable());
 					}
@@ -373,9 +440,17 @@ public class DRDao extends AbstractBaseDao {
 						evdto.setCustomerFine(allevent.getEventCustomerMappings().get(j).getCustomerFine());
 						evdto.setEarnings((allevent.getEventCustomerMappings().get(j).getCommitedPower()*allevent.getEventCustomerMappings().get(j).getBidPrice())- allevent.getEventCustomerMappings().get(j).getCustomerFine());
 					}
+					if(evdto.getParticipationStatus() == null) {
+						evdto.setParticipationStatus("0");
+					}
 					listOfCustomers.add(evdto);
 				}
+				alleventdto.setParticipatedCustomers(participationCount);
 				alleventdto.setListOfCustomers(listOfCustomers);
+				alleventdto.setInvitedCustomers(notifiedCount);
+				alleventdto.setCounterBidCustomers(counterBid);
+				alleventdto.setNoResponseCustomers(noResponseCount);
+				
 				listOfEventsdto.add(alleventdto);
 			}
 			response.put("responseStatus", "1");
@@ -402,22 +477,114 @@ public class DRDao extends AbstractBaseDao {
 		HashMap<String, Object> response = new HashMap<String, Object>();
 		HashMap<String, Object> internalresponse = new HashMap<String, Object>();
 		List<AllEventDto> listOfEvents = new ArrayList<AllEventDto>();
+		int participationCount=0, noResponseCount=0,counterBid=0, notifiedCount=0;
 		try {
-
+			int count=0;
 			AllEventSet alleventset = eventsetrepo.getEventSet(eventSetId);
+			ArrayList<String> status = new ArrayList<String>();
+			status = CompareHelper.countdata(alleventset.getAllEvents());
 			AllEventSetDto alleventsetdto = new AllEventSetDto();
 			alleventsetdto.setEventSetId(alleventset.getEventSetId());
 			alleventsetdto.setEventSetName(alleventset.getName());
 			alleventsetdto.setEventSetStatus(alleventset.getEventSetStatusPl().getStatusName());
 			alleventsetdto.setUserId(alleventset.getAllUser().getUserId());
 			alleventsetdto.setUserName(alleventset.getAllUser().getFullName());
+			alleventsetdto.setDateOfOccurence(alleventset.getUploadTime().toString());
+			alleventsetdto.setTotalPrice(Double.toString(alleventset.getTotalPrice()));
+			alleventsetdto.setPlannedPower(Double.toString(alleventset.getPlannedPower()));
+			alleventsetdto.setActualPower(Double.toString(alleventset.getActualPower()));
+			if (status.size() > 0) {
+				alleventsetdto.setPublishedEvents(status.get(0));
+				alleventsetdto.setCompletedEvents(status.get(1));
+				alleventsetdto.setCancelledEvents(status.get(2));
+			}
 			for (int i = 0; i < alleventset.getAllEvents().size(); i++) {
+				count = 0;
+				participationCount=0;noResponseCount=0;counterBid=0;notifiedCount=0;
 				AllEventDto alleventdto = new AllEventDto();
 				alleventdto.setEventId(alleventset.getAllEvents().get(i).getEventId());
 				alleventdto.setEventName(alleventset.getAllEvents().get(i).getEventName());
 				alleventdto.setEventStatus(alleventset.getAllEvents().get(i).getEventStatusPl().getName());
 				alleventdto.setPower(alleventset.getAllEvents().get(i).getActualPower());
+				
+				
+				alleventdto.setPlannedPower(
+						Double.toString(alleventset.getAllEvents().get(i).getPlannedPower()));
+				alleventdto.setPrice(
+						Double.toString(alleventset.getAllEvents().get(i).getExpectedPrice()));
+				alleventdto.setNumberOfCustomers(Integer.toString(
+						alleventset.getAllEvents().get(i).getEventCustomerMappings().size()));
+				alleventdto.setStartTime(
+						alleventset.getAllEvents().get(i).getEventStartTime().toString());
+				alleventdto.setEndTime(
+						alleventset.getAllEvents().get(i).getEventEndTime().toString());
+				alleventdto.setCommittedPower(
+						Double.toString(alleventset.getAllEvents().get(i).getCommitedPower()));
+				alleventdto.setShortfall("0");
+				alleventdto.setActualPower(
+						Double.toString(alleventset.getAllEvents().get(i).getActualPower()));
+				alleventdto.setStartTime(
+						alleventset.getAllEvents().get(i).getEventStartTime().toString());
+				if (alleventset.getAllEvents().get(i).getIsFineApplicable() != null) {
+					alleventdto.setIsFineApplicable(
+							alleventset.getAllEvents().get(i).getIsFineApplicable());
+				}
+				if (Double.valueOf(alleventset.getAllEvents().get(i).getBuyerFine()) != null) {
+					alleventdto.setBuyerFine(alleventset.getAllEvents().get(i).getBuyerFine());
+				}
+				List<EventCustomerMapping> listOfCustomers = eventcustomerrepo
+						.getEventCustomerMappings(alleventset.getAllEvents().get(i).getEventId());
+				List<EventCustomerDto> listOfCustomersdto = new ArrayList<EventCustomerDto>();
+				for (int k = 0; k < listOfCustomers.size(); k++) {
+					EventCustomerDto eventcustomerdto = new EventCustomerDto();
+					eventcustomerdto.setUserId(listOfCustomers.get(k).getAllUser().getUserId());
+					eventcustomerdto.setUserName(listOfCustomers.get(k).getAllUser().getFullName());
+					eventcustomerdto.setActualPower(listOfCustomers.get(k).getActualPower());
+					eventcustomerdto.setCommitments(listOfCustomers.get(k).getCommitedPower());
+					eventcustomerdto.setPrice(listOfCustomers.get(k).getBidPrice());
+					eventcustomerdto.setIsSelected("Y");
+					// eventCustomerDto.setActualPower(allevent.getActualPower()); 
+					if (listOfCustomers.get(k).getEventCustomerStatusId() == 3 || listOfCustomers.get(k).getEventCustomerStatusId() == 5 || listOfCustomers.get(k).getEventCustomerStatusId() == 8 || listOfCustomers.get(k).getEventCustomerStatusId() == 10) {
+						eventcustomerdto.setParticipationStatus("1");	
+						participationCount++;
+					}
+
+					else if (listOfCustomers.get(k).getEventCustomerStatusId() == 4) {
+						
+						counterBid++;
+					}
+					
+					else if (listOfCustomers.get(k).getEventCustomerStatusId() != 1 && listOfCustomers.get(k).getEventCustomerStatusId() !=9) {
+						
+						notifiedCount++;
+						noResponseCount++;
+					} 
+					
+					else if (listOfCustomers.get(k).getEventCustomerStatusId() == 1) {
+						
+						noResponseCount++;
+					}
+					if (listOfCustomers.get(k).getIsFineApplicable() != null) {
+						eventcustomerdto.setIsFineApplicable(listOfCustomers.get(k).getIsFineApplicable());
+					}
+					if (Double.valueOf(listOfCustomers.get(k).getCustomerFine()) != null) {
+						eventcustomerdto.setCustomerFine(listOfCustomers.get(k).getCustomerFine());
+						eventcustomerdto.setEarnings((listOfCustomers.get(k).getCommitedPower()*listOfCustomers.get(k).getBidPrice())-listOfCustomers.get(k).getCustomerFine() );
+					}
+					if(eventcustomerdto.getParticipationStatus() == null) {
+						eventcustomerdto.setParticipationStatus("0");
+					}
+					listOfCustomersdto.add(eventcustomerdto);
+
+				}
+				alleventdto.setParticipatedCustomers(count);
+				alleventdto.setListOfCustomers(listOfCustomersdto);
+				alleventdto.setParticipatedCustomers(participationCount);
+				alleventdto.setNoResponseCustomers(noResponseCount);
+				alleventdto.setCounterBidCustomers(counterBid);
+				alleventdto.setInvitedCustomers(notifiedCount);
 				listOfEvents.add(alleventdto);
+
 			}
 
 			internalresponse.put("eventSetDetails", alleventsetdto);
@@ -438,287 +605,57 @@ public class DRDao extends AbstractBaseDao {
 		return response;
 	}
 
-	public HashMap<String, Object> loginDSOUser(String email, String password) throws ParseException {
-		Date date = new Date();
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(date);
-		cal.add(Calendar.DATE, -7);
-		Date weekdate = cal.getTime();
-		cal.setTime(date);
-		cal.add(Calendar.DATE, -30);
-		Date monthdate = cal.getTime();
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-		String weekdates = sdf.format(weekdate);
-		String monthdates = sdf.format(monthdate);
-		String dates = sdf.format(date);
-		weekdate = sdf.parse(weekdates);
-		monthdate = sdf.parse(monthdates);
-		date = sdf.parse(dates);
+//	public HashMap<String, Object> loginDSOUser(String email, String password) throws ParseException {
+//		
+//		HashMap<String, Object> response = new HashMap<String, Object>();
+//		HashMap<String, Object> internalresponse = new HashMap<String, Object>();
+//		CompareHelper ch = new CompareHelper();
+//		try {
+//			int count = this.alluserrepo.loginDSOUser(email, password);
+//			ArrayList<String> status = new ArrayList<String>();
+//			if (count >= 1) {
+//				AllUser alluser = alluserrepo.getUserBymail(email);
+//				internalresponse.put("userId", alluser.getUserId());
+//				response.put("responseStatus", "1");
+//				response.put("responseMessage", "The request was successfully served.");
+//				response.put("response", internalresponse);
+//				response.put("customMessage", CustomMessages.getCustomMessages("SL"));
+//
+//			} else if (count < 1) {
+//				response.put("responseStatus", "1");
+//				response.put("responseMessage", "The request was successfully served.");
+//				response.put("customMessage", CustomMessages.getCustomMessages("WL"));
+//				response.put("response", internalresponse);
+//			}
+//
+//		} catch (Exception e) {
+//			System.out.println("Error in checkExistence" + e.getMessage());
+//			e.printStackTrace();
+//			response.put("responseStatus", "2");
+//			response.put("responseMessage", "Internal Server Error");
+//			response.put("response", null);
+//			response.put("customMessage", null);
+//
+//		}
+//		return response;
+//	}
+
+public HashMap<String, Object> loginDSOUser(String email, String password) throws ParseException {
+		
 		HashMap<String, Object> response = new HashMap<String, Object>();
 		HashMap<String, Object> internalresponse = new HashMap<String, Object>();
 		CompareHelper ch = new CompareHelper();
 		try {
-			int count = this.alluserrepo.loginDSOUser(email, password);
-			ArrayList<String> status = new ArrayList<String>();
-			if (count >= 1) {
+			AllDso dsoUser = this.alldsoRepo.loginDSOUser(email, password);
+			if (dsoUser !=null) {
 				AllUser alluser = alluserrepo.getUserBymail(email);
-				List<AllEventSet> listOfWeeklyEvents = eventrepo.getEventSetBydate(weekdate, date);
-				List<AllEventSet> listOfMonthlyEvents = eventrepo.getEventSetBydate(monthdate, date);
-				List<AllEventSet> listOfUpcomingEvents = eventrepo.getupcomingEventSet(date);
-				List<AllEventSetDto> listOfWeeklyEventSetDto = new ArrayList<AllEventSetDto>();
-				List<AllEventSetDto> listOfMonthlyEventSetDto = new ArrayList<AllEventSetDto>();
-				List<AllEventSetDto> listOfUpcomingEventSetDto = new ArrayList<AllEventSetDto>();
-
-				for (int i = 0; i < listOfWeeklyEvents.size(); i++) {
-					status = ch.countdata(listOfWeeklyEvents.get(i).getAllEvents());
-					AllEventSetDto alleventsetdto = new AllEventSetDto();
-					alleventsetdto.setEventSetName(listOfWeeklyEvents.get(i).getName());
-					alleventsetdto.setEventSetId(listOfWeeklyEvents.get(i).getEventSetId());
-					alleventsetdto.setEventSetStatus(listOfWeeklyEvents.get(i).getEventSetStatusPl().getStatusName());
-					alleventsetdto.setUserId(listOfWeeklyEvents.get(i).getAllUser().getUserId());
-					alleventsetdto.setDateOfOccurence(listOfWeeklyEvents.get(i).getUploadTime().toString());
-					alleventsetdto.setTotlaPrice(Double.toString(listOfWeeklyEvents.get(i).getTotalPrice()));
-					alleventsetdto.setPlannedPower(Double.toString(listOfWeeklyEvents.get(i).getPlannedPower()));
-					alleventsetdto.setUserName(listOfWeeklyEvents.get(i).getAllUser().getFullName());
-					alleventsetdto.setActualPower(Double.toString(listOfWeeklyEvents.get(i).getActualPower()));
-					if (status.size() > 0) {
-						alleventsetdto.setPublishedEvents(status.get(0));
-						alleventsetdto.setCompletedEvents(status.get(1));
-						alleventsetdto.setCancelledEvents(status.get(2));
-					}
-					List<AllEventDto> listOfEvents = new ArrayList<AllEventDto>();
-					for (int j = 0; j < listOfWeeklyEvents.get(i).getAllEvents().size(); j++) {
-						AllEventDto alleventdto = new AllEventDto();
-						alleventdto.setEventId(listOfWeeklyEvents.get(i).getAllEvents().get(j).getEventId());
-						alleventdto.setEventName(listOfWeeklyEvents.get(i).getAllEvents().get(j).getEventName());
-						alleventdto.setEventStatus(
-								listOfWeeklyEvents.get(i).getAllEvents().get(j).getEventStatusPl().getName());
-						alleventdto.setPower(listOfWeeklyEvents.get(i).getAllEvents().get(j).getActualPower());
-						alleventdto.setPlannedPower(
-								Double.toString(listOfWeeklyEvents.get(i).getAllEvents().get(j).getPlannedPower()));
-						alleventdto.setPrice(
-								Double.toString(listOfWeeklyEvents.get(i).getAllEvents().get(j).getExpectedPrice()));
-						alleventdto.setNumberOfCustomers(Integer.toString(
-								listOfWeeklyEvents.get(i).getAllEvents().get(j).getEventCustomerMappings().size()));
-						alleventdto.setStartTime(
-								listOfWeeklyEvents.get(i).getAllEvents().get(j).getEventStartTime().toString());
-						alleventdto.setEndTime(
-								listOfWeeklyEvents.get(i).getAllEvents().get(j).getEventEndTime().toString());
-						alleventdto.setCommittedPower(
-								Double.toString(listOfWeeklyEvents.get(i).getAllEvents().get(j).getCommitedPower()));
-						alleventdto.setShortfall("0");
-						alleventdto.setActualPower(
-								Double.toString(listOfWeeklyEvents.get(i).getAllEvents().get(j).getActualPower()));
-						alleventdto.setStartTime(
-								listOfWeeklyEvents.get(i).getAllEvents().get(j).getEventStartTime().toString());
-						if (listOfWeeklyEvents.get(i).getAllEvents().get(j).getIsFineApplicable() != null) {
-							alleventdto.setIsFineApplicable(
-									listOfWeeklyEvents.get(i).getAllEvents().get(j).getIsFineApplicable());
-						}
-						if (Double.valueOf(listOfWeeklyEvents.get(i).getAllEvents().get(j).getBuyerFine()) != null) {
-							alleventdto.setBuyerFine(listOfWeeklyEvents.get(i).getAllEvents().get(j).getBuyerFine());
-						}
-						List<EventCustomerMapping> listOfCustomers = eventcustomerrepo
-								.getEventCustomerMappings(listOfWeeklyEvents.get(i).getAllEvents().get(j).getEventId());
-						List<EventCustomerDto> listOfCustomersdto = new ArrayList<EventCustomerDto>();
-						for (int k = 0; k < listOfCustomers.size(); k++) {
-							EventCustomerDto eventcustomerdto = new EventCustomerDto();
-							eventcustomerdto.setUserId(listOfCustomers.get(k).getAllUser().getUserId());
-							eventcustomerdto.setUserName(listOfCustomers.get(k).getAllUser().getFullName());
-							eventcustomerdto.setActualPower(listOfCustomers.get(k).getActualPower());
-							eventcustomerdto.setCommitments(listOfCustomers.get(k).getCommitedPower());
-							eventcustomerdto.setPrice(listOfCustomers.get(k).getBidPrice());
-							eventcustomerdto.setIsSelected("Y");
-							// eventCustomerDto.setActualPower(allevent.getActualPower());
-							eventcustomerdto.setParticipationStatus("1");
-							if (listOfCustomers.get(k).getIsFineApplicable() != null) {
-								eventcustomerdto.setIsFineApplicable(listOfCustomers.get(k).getIsFineApplicable());
-							}
-							if (Double.valueOf(listOfCustomers.get(k).getCustomerFine()) != null) {
-								eventcustomerdto.setCustomerFine(listOfCustomers.get(k).getCustomerFine());
-								eventcustomerdto.setEarnings((listOfCustomers.get(k).getCommitedPower()*listOfCustomers.get(k).getBidPrice())-listOfCustomers.get(k).getCustomerFine() );
-							}
-							listOfCustomersdto.add(eventcustomerdto);
-
-						}
-						alleventdto.setListOfCustomers(listOfCustomersdto);
-						listOfEvents.add(alleventdto);
-					}
-					alleventsetdto.setAllEvents(listOfEvents);
-					listOfWeeklyEventSetDto.add(alleventsetdto);
-				}
-
-				for (int i = 0; i < listOfMonthlyEvents.size(); i++) {
-					status = ch.countdata(listOfMonthlyEvents.get(i).getAllEvents());
-					AllEventSetDto alleventsetdto = new AllEventSetDto();
-					alleventsetdto.setEventSetName(listOfMonthlyEvents.get(i).getName());
-					alleventsetdto.setEventSetId(listOfMonthlyEvents.get(i).getEventSetId());
-					alleventsetdto.setEventSetStatus(listOfMonthlyEvents.get(i).getEventSetStatusPl().getStatusName());
-					alleventsetdto.setUserId(listOfMonthlyEvents.get(i).getAllUser().getUserId());
-					alleventsetdto.setUserName(listOfMonthlyEvents.get(i).getAllUser().getFullName());
-					alleventsetdto.setDateOfOccurence(listOfMonthlyEvents.get(i).getUploadTime().toString());
-					alleventsetdto.setTotlaPrice(Double.toString(listOfMonthlyEvents.get(i).getTotalPrice()));
-					alleventsetdto.setPlannedPower(Double.toString(listOfMonthlyEvents.get(i).getPlannedPower()));
-					alleventsetdto.setActualPower(Double.toString(listOfMonthlyEvents.get(i).getActualPower()));
-					if (status.size() > 0) {
-						alleventsetdto.setPublishedEvents(status.get(0));
-						alleventsetdto.setCompletedEvents(status.get(1));
-						alleventsetdto.setCancelledEvents(status.get(2));
-					}
-					List<AllEventDto> listOfEvents = new ArrayList<AllEventDto>();
-					for (int j = 0; j < listOfMonthlyEvents.get(i).getAllEvents().size(); j++) {
-						AllEventDto alleventdto = new AllEventDto();
-						alleventdto.setEventId(listOfMonthlyEvents.get(i).getAllEvents().get(j).getEventId());
-						alleventdto.setEventName(listOfMonthlyEvents.get(i).getAllEvents().get(j).getEventName());
-						alleventdto.setEventStatus(
-								listOfMonthlyEvents.get(i).getAllEvents().get(j).getEventStatusPl().getName());
-						alleventdto.setPower(listOfMonthlyEvents.get(i).getAllEvents().get(j).getActualPower());
-						alleventdto.setPlannedPower(
-								Double.toString(listOfMonthlyEvents.get(i).getAllEvents().get(j).getPlannedPower()));
-						alleventdto.setPrice(
-								Double.toString(listOfMonthlyEvents.get(i).getAllEvents().get(j).getExpectedPrice()));
-						alleventdto.setNumberOfCustomers(Integer.toString(
-								listOfMonthlyEvents.get(i).getAllEvents().get(j).getEventCustomerMappings().size()));
-						alleventdto.setStartTime(
-								listOfMonthlyEvents.get(i).getAllEvents().get(j).getEventStartTime().toString());
-						alleventdto.setEndTime(
-								listOfMonthlyEvents.get(i).getAllEvents().get(j).getEventEndTime().toString());
-						alleventdto.setCommittedPower(
-								Double.toString(listOfMonthlyEvents.get(i).getAllEvents().get(j).getCommitedPower()));
-						alleventdto.setShortfall("0");
-						alleventdto.setActualPower(
-								Double.toString(listOfMonthlyEvents.get(i).getAllEvents().get(j).getActualPower()));
-						alleventdto.setStartTime(
-								listOfMonthlyEvents.get(i).getAllEvents().get(j).getEventStartTime().toString());
-						if (listOfWeeklyEvents.get(i).getAllEvents().get(j).getIsFineApplicable() != null) {
-							alleventdto.setIsFineApplicable(
-									listOfWeeklyEvents.get(i).getAllEvents().get(j).getIsFineApplicable());
-						}
-						if (Double.valueOf(listOfWeeklyEvents.get(i).getAllEvents().get(j).getBuyerFine()) != null) {
-							alleventdto.setBuyerFine(listOfWeeklyEvents.get(i).getAllEvents().get(j).getBuyerFine());
-						}
-						List<EventCustomerMapping> listOfCustomers = eventcustomerrepo.getEventCustomerMappings(
-								listOfMonthlyEvents.get(i).getAllEvents().get(j).getEventId());
-						List<EventCustomerDto> listOfCustomersdto = new ArrayList<EventCustomerDto>();
-						for (int k = 0; k < listOfCustomers.size(); k++) {
-							EventCustomerDto eventcustomerdto = new EventCustomerDto();
-							eventcustomerdto.setUserId(listOfCustomers.get(k).getAllUser().getUserId());
-							eventcustomerdto.setUserName(listOfCustomers.get(k).getAllUser().getFullName());
-							eventcustomerdto.setActualPower(listOfCustomers.get(k).getActualPower());
-							eventcustomerdto.setCommitments(listOfCustomers.get(k).getCommitedPower());
-							eventcustomerdto.setPrice(listOfCustomers.get(k).getBidPrice());
-							eventcustomerdto.setIsSelected("Y");
-							// eventCustomerDto.setActualPower(allevent.getActualPower());
-							eventcustomerdto.setParticipationStatus("1");
-							if (listOfCustomers.get(k).getIsFineApplicable() != null) {
-								eventcustomerdto.setIsFineApplicable(listOfCustomers.get(k).getIsFineApplicable());
-							}
-							if (Double.valueOf(listOfCustomers.get(k).getCustomerFine()) != null) {
-								eventcustomerdto.setCustomerFine(listOfCustomers.get(k).getCustomerFine());
-								eventcustomerdto.setEarnings((listOfCustomers.get(k).getCommitedPower()*listOfCustomers.get(k).getBidPrice())-listOfCustomers.get(k).getCustomerFine() );
-							}
-							listOfCustomersdto.add(eventcustomerdto);
-
-						}
-						alleventdto.setListOfCustomers(listOfCustomersdto);
-						listOfEvents.add(alleventdto);
-					}
-					alleventsetdto.setAllEvents(listOfEvents);
-					listOfMonthlyEventSetDto.add(alleventsetdto);
-				}
-
-				for (int i = 0; i < listOfUpcomingEvents.size(); i++) {
-					status = ch.countdata(listOfUpcomingEvents.get(i).getAllEvents());
-					AllEventSetDto alleventsetdto = new AllEventSetDto();
-					alleventsetdto.setEventSetName(listOfUpcomingEvents.get(i).getName());
-					alleventsetdto.setEventSetId(listOfUpcomingEvents.get(i).getEventSetId());
-					alleventsetdto.setEventSetStatus(listOfUpcomingEvents.get(i).getEventSetStatusPl().getStatusName());
-					alleventsetdto.setUserId(listOfUpcomingEvents.get(i).getAllUser().getUserId());
-					alleventsetdto.setUserName(listOfUpcomingEvents.get(i).getAllUser().getFullName());
-					alleventsetdto.setDateOfOccurence(listOfUpcomingEvents.get(i).getUploadTime().toString());
-					alleventsetdto.setTotlaPrice(Double.toString(listOfUpcomingEvents.get(i).getTotalPrice()));
-					alleventsetdto.setPlannedPower(Double.toString(listOfUpcomingEvents.get(i).getPlannedPower()));
-					alleventsetdto.setActualPower(Double.toString(listOfUpcomingEvents.get(i).getActualPower()));
-					if (status.size() > 0) {
-						alleventsetdto.setPublishedEvents(status.get(0));
-						alleventsetdto.setCompletedEvents(status.get(1));
-						alleventsetdto.setCancelledEvents(status.get(2));
-					}
-					List<AllEventDto> listOfEvents = new ArrayList<AllEventDto>();
-					for (int j = 0; j < listOfUpcomingEvents.get(i).getAllEvents().size(); j++) {
-						AllEventDto alleventdto = new AllEventDto();
-						alleventdto.setEventId(listOfUpcomingEvents.get(i).getAllEvents().get(j).getEventId());
-						alleventdto.setEventName(listOfUpcomingEvents.get(i).getAllEvents().get(j).getEventName());
-						alleventdto.setEventStatus(
-								listOfUpcomingEvents.get(i).getAllEvents().get(j).getEventStatusPl().getName());
-						alleventdto.setPower(listOfUpcomingEvents.get(i).getAllEvents().get(j).getActualPower());
-						alleventdto.setPlannedPower(
-								Double.toString(listOfUpcomingEvents.get(i).getAllEvents().get(j).getPlannedPower()));
-						alleventdto.setPrice(
-								Double.toString(listOfUpcomingEvents.get(i).getAllEvents().get(j).getExpectedPrice()));
-						alleventdto.setNumberOfCustomers(Integer.toString(
-								listOfUpcomingEvents.get(i).getAllEvents().get(j).getEventCustomerMappings().size()));
-						alleventdto.setStartTime(
-								listOfUpcomingEvents.get(i).getAllEvents().get(j).getEventStartTime().toString());
-						alleventdto.setEndTime(
-								listOfUpcomingEvents.get(i).getAllEvents().get(j).getEventEndTime().toString());
-						alleventdto.setCommittedPower(
-								Double.toString(listOfUpcomingEvents.get(i).getAllEvents().get(j).getCommitedPower()));
-						alleventdto.setShortfall("0");
-						alleventdto.setActualPower(
-								Double.toString(listOfUpcomingEvents.get(i).getAllEvents().get(j).getActualPower()));
-						alleventdto.setStartTime(
-								listOfUpcomingEvents.get(i).getAllEvents().get(j).getEventStartTime().toString());
-						if (listOfWeeklyEvents.get(i).getAllEvents().get(j).getIsFineApplicable() != null) {
-							alleventdto.setIsFineApplicable(
-									listOfWeeklyEvents.get(i).getAllEvents().get(j).getIsFineApplicable());
-						}
-						if (Double.valueOf(listOfWeeklyEvents.get(i).getAllEvents().get(j).getBuyerFine()) != null) {
-							alleventdto.setBuyerFine(listOfWeeklyEvents.get(i).getAllEvents().get(j).getBuyerFine());
-						}
-						List<EventCustomerMapping> listOfCustomers = eventcustomerrepo.getEventCustomerMappings(
-								listOfUpcomingEvents.get(i).getAllEvents().get(j).getEventId());
-						List<EventCustomerDto> listOfCustomersdto = new ArrayList<EventCustomerDto>();
-						for (int k = 0; k < listOfCustomers.size(); k++) {
-							EventCustomerDto eventcustomerdto = new EventCustomerDto();
-							eventcustomerdto.setUserId(listOfCustomers.get(k).getAllUser().getUserId());
-							eventcustomerdto.setUserName(listOfCustomers.get(k).getAllUser().getFullName());
-							if (new Double(listOfCustomers.get(k).getActualPower()) != null) {
-								eventcustomerdto.setActualPower(listOfCustomers.get(k).getActualPower());
-							}
-							if (new Double(listOfCustomers.get(k).getCommitedPower()) != null) {
-								eventcustomerdto.setCommitments(listOfCustomers.get(k).getCommitedPower());
-							}
-							eventcustomerdto.setPrice(listOfCustomers.get(k).getBidPrice());
-							eventcustomerdto.setIsSelected("Y");
-							// eventCustomerDto.setActualPower(allevent.getActualPower());
-							eventcustomerdto.setParticipationStatus("1");
-							if (listOfCustomers.get(k).getIsFineApplicable() != null) {
-								eventcustomerdto.setIsFineApplicable(listOfCustomers.get(k).getIsFineApplicable());
-							}
-							if (Double.valueOf(listOfCustomers.get(k).getCustomerFine()) != null) {
-								eventcustomerdto.setCustomerFine(listOfCustomers.get(k).getCustomerFine());
-								eventcustomerdto.setEarnings((listOfCustomers.get(k).getCommitedPower()*listOfCustomers.get(k).getBidPrice())-listOfCustomers.get(k).getCustomerFine() );
-							}
-							listOfCustomersdto.add(eventcustomerdto);
-
-						}
-						alleventdto.setListOfCustomers(listOfCustomersdto);
-						listOfEvents.add(alleventdto);
-					}
-					alleventsetdto.setAllEvents(listOfEvents);
-					listOfUpcomingEventSetDto.add(alleventsetdto);
-				}
-				internalresponse.put("weeklyEvents", listOfWeeklyEventSetDto);
-				internalresponse.put("monthlyEvents", listOfMonthlyEventSetDto);
-				internalresponse.put("upcomingEvents", listOfUpcomingEventSetDto);
-				internalresponse.put("userId", alluser.getUserId());
+				internalresponse.put("userId", dsoUser.getDsoId());
 				response.put("responseStatus", "1");
 				response.put("responseMessage", "The request was successfully served.");
 				response.put("response", internalresponse);
 				response.put("customMessage", CustomMessages.getCustomMessages("SL"));
 
-			} else if (count < 1) {
+			} else  {
 				response.put("responseStatus", "1");
 				response.put("responseMessage", "The request was successfully served.");
 				response.put("customMessage", CustomMessages.getCustomMessages("WL"));
@@ -855,7 +792,7 @@ public class DRDao extends AbstractBaseDao {
 						eventCustomerDto.setUserName(listOfCustomers.get(j).getAllUser().getFullName());
 						eventCustomerDto.setIsSelected("N");
 						eventCustomerDto.setActualPower(allevent.getActualPower());
-						eventCustomerDto.setParticipationStatus("1"); // hardcoded
+						// eventCustomerDto.setParticipationStatus("1"); // hardcoded
 						eventCustomerDto.setCommitments(allevent.getCommitedPower());
 						eventCustomerDto.setPrice(allevent.getExpectedPrice());
 
@@ -883,7 +820,7 @@ public class DRDao extends AbstractBaseDao {
 
 							eventCustomerDto.setUserId(listOfCustomers.get(j).getAllUser().getUserId());
 							eventCustomerDto.setUserName(listOfCustomers.get(j).getAllUser().getFullName());
-							eventCustomerDto.setActualPower(allevent.getActualPower());
+							eventCustomerDto.setActualPower(evtmap.getActualPower());
 							if (evtmap.getEventCustomerStatusId() >= 3) {
 								eventCustomerDto.setParticipationStatus("1"); // hardcoded
 							} else {
@@ -896,6 +833,7 @@ public class DRDao extends AbstractBaseDao {
 							eventCustomerDto.setCommitments(evtmap.getCommitedPower());
 							eventCustomerDto.setPrice(evtmap.getBidPrice());
 							eventCustomerDto.setStatus(evtmap.getEventCustomerStatusId());
+							eventCustomerDto.setIsFineApplicable(evtmap.getIsFineApplicable());
 							// eventCustomerDto.setEventId(event.getEventId());
 							listOfEventCustDto.add(eventCustomerDto);
 						}
@@ -966,6 +904,33 @@ public class DRDao extends AbstractBaseDao {
 		}
 		return response;
 	}
+	
+	public HashMap<String, Object> rejectCounterBid(int eventId, int customerId) {
+
+		HashMap<String, Object> response = new HashMap<String, Object>();
+
+		try {
+			EventCustomerMapping eventcustomermapping = eventcustomerrepo.getEventCustomerById(eventId, customerId);
+			eventcustomerrepo.updateEventCustomerbyId(6, eventId, customerId);
+		//	eventrepo.removeEventPower(eventcustomermapping.getCommitedPower(), eventId);
+			response.put("responseStatus", "1");
+			response.put("responseMessage", "The request was successfully served.");
+			response.put("response", null);
+			response.put("customMessage", null);
+
+		}
+
+		catch (Exception e) {
+			System.out.println("Error in checkExistence" + e.getMessage());
+			e.printStackTrace();
+			response.put("responseStatus", "2");
+			response.put("responseMessage", "Internal Server Error.");
+			response.put("response", null);
+			response.put("customMessage", null);
+
+		}
+		return response;
+	}
 
 	public HashMap<String, Object> acceptCounterBid(int eventId, int customerId) {
 
@@ -993,4 +958,130 @@ public class DRDao extends AbstractBaseDao {
 		}
 		return response;
 	}
+	
+	public HashMap<String, Object> getEventSetsByUser(int userId) throws ParseException {
+		Date date = new Date();
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		cal.add(Calendar.DATE, -7);
+		Date weekdate = cal.getTime();
+		cal.setTime(date);
+		cal.add(Calendar.DATE, -30);
+		Date monthdate = cal.getTime();
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		String weekdates = sdf.format(weekdate);
+		String monthdates = sdf.format(monthdate);
+		String dates = sdf.format(date);
+		weekdate = sdf.parse(weekdates);
+		monthdate = sdf.parse(monthdates);
+		date = sdf.parse(dates);
+		HashMap<String, Object> response = new HashMap<String, Object>();
+		HashMap<String, Object> internalresponse = new HashMap<String, Object>();
+		ArrayList<String> status = new ArrayList<>();
+		ArrayList<Integer> weeklyEvents = new ArrayList<>();
+		ArrayList<Integer> monthlyEvents = new ArrayList<>();
+		ArrayList<Integer> upcomingEvents = new ArrayList<>();
+		try {
+				List<AllEventSet> listOfWeeklyEvents = eventrepo.getEventSetBydate(weekdate, date, userId);
+				List<AllEventSet> listOfMonthlyEvents = eventrepo.getEventSetBydate(monthdate, date, userId);
+				List<AllEventSet> listOfUpcomingEvents = eventrepo.getupcomingEventSet(date, userId);
+				List<AllEventSetDto> listOfWeeklyEventSetDto = new ArrayList<AllEventSetDto>();
+				List<AllEventSetDto> listOfMonthlyEventSetDto = new ArrayList<AllEventSetDto>();
+				List<AllEventSetDto> listOfUpcomingEventSetDto = new ArrayList<AllEventSetDto>();
+
+				for (int i = 0; i < listOfWeeklyEvents.size(); i++) {
+					 status = CompareHelper.countdata(listOfWeeklyEvents.get(i).getAllEvents());
+					AllEventSetDto alleventsetdto = new AllEventSetDto();
+					alleventsetdto.setEventSetName(listOfWeeklyEvents.get(i).getName());
+					alleventsetdto.setEventSetId(listOfWeeklyEvents.get(i).getEventSetId());
+					alleventsetdto.setEventSetStatus(listOfWeeklyEvents.get(i).getEventSetStatusPl().getStatusName());
+					alleventsetdto.setUserId(listOfWeeklyEvents.get(i).getAllUser().getUserId());
+					alleventsetdto.setUserName(listOfWeeklyEvents.get(i).getAllUser().getFullName());
+					alleventsetdto.setActualPower(Double.toString(listOfWeeklyEvents.get(i).getActualPower()));
+					if (status.size() > 0) {
+						alleventsetdto.setPublishedEvents(status.get(0));
+						alleventsetdto.setCompletedEvents(status.get(1));
+						alleventsetdto.setCancelledEvents(status.get(2));
+					}
+					alleventsetdto.setCreatedTs(listOfWeeklyEvents.get(i).getCreatedTs());
+					alleventsetdto.setDateOfOccurence(listOfWeeklyEvents.get(i).getDate().toString());
+					alleventsetdto.setTotalPrice(Double.toString(listOfWeeklyEvents.get(i).getTotalPrice()));
+					alleventsetdto.setPlannedPower(Double.toString(listOfWeeklyEvents.get(i).getPlannedPower()));
+					weeklyEvents.add(alleventsetdto.getEventSetId());
+					listOfWeeklyEventSetDto.add(alleventsetdto);
+				}
+
+				for (int i = 0; i < listOfMonthlyEvents.size(); i++) {
+					// status = ch.countdata(listOfMonthlyEvents.get(i).getAllEvents());
+					if (weeklyEvents.contains(listOfMonthlyEvents.get(i).getEventSetId())) {
+						continue;
+					}
+					AllEventSetDto alleventsetdto = new AllEventSetDto();
+					alleventsetdto.setEventSetName(listOfMonthlyEvents.get(i).getName());
+					alleventsetdto.setEventSetId(listOfMonthlyEvents.get(i).getEventSetId());
+					alleventsetdto.setEventSetStatus(listOfMonthlyEvents.get(i).getEventSetStatusPl().getStatusName());
+					alleventsetdto.setUserId(listOfMonthlyEvents.get(i).getAllUser().getUserId());
+					alleventsetdto.setUserName(listOfMonthlyEvents.get(i).getAllUser().getFullName());
+					alleventsetdto.setActualPower(Double.toString(listOfMonthlyEvents.get(i).getActualPower()));
+					if (status.size() > 0) {
+						alleventsetdto.setPublishedEvents(status.get(0));
+						alleventsetdto.setCompletedEvents(status.get(1));
+						alleventsetdto.setCancelledEvents(status.get(2));
+					}
+					alleventsetdto.setCreatedTs(listOfMonthlyEvents.get(i).getCreatedTs());
+					alleventsetdto.setDateOfOccurence(listOfMonthlyEvents.get(i).getDate().toString());
+					alleventsetdto.setTotalPrice(Double.toString(listOfMonthlyEvents.get(i).getTotalPrice()));
+					alleventsetdto.setPlannedPower(Double.toString(listOfMonthlyEvents.get(i).getPlannedPower()));
+					
+					listOfMonthlyEventSetDto.add(alleventsetdto);
+				}
+
+				for (int i = 0; i < listOfUpcomingEvents.size(); i++) {
+					// status = ch.countdata(listOfUpcomingEvents.get(i).getAllEvents());
+					if (weeklyEvents.contains(listOfUpcomingEvents.get(i).getEventSetId()) || monthlyEvents.contains(listOfUpcomingEvents.get(i).getEventSetId())) {
+						continue;
+					}
+					AllEventSetDto alleventsetdto = new AllEventSetDto();
+					alleventsetdto.setEventSetName(listOfUpcomingEvents.get(i).getName());
+					alleventsetdto.setEventSetId(listOfUpcomingEvents.get(i).getEventSetId());
+					alleventsetdto.setEventSetStatus(listOfUpcomingEvents.get(i).getEventSetStatusPl().getStatusName());
+					alleventsetdto.setUserId(listOfUpcomingEvents.get(i).getAllUser().getUserId());
+					alleventsetdto.setUserName(listOfUpcomingEvents.get(i).getAllUser().getFullName());
+					alleventsetdto.setActualPower(Double.toString(listOfUpcomingEvents.get(i).getActualPower()));
+					if (status.size() > 0) {
+						alleventsetdto.setPublishedEvents(status.get(0));
+						alleventsetdto.setCompletedEvents(status.get(1));
+						alleventsetdto.setCancelledEvents(status.get(2));
+					}
+					alleventsetdto.setCreatedTs(listOfUpcomingEvents.get(i).getCreatedTs());
+					alleventsetdto.setDateOfOccurence(listOfUpcomingEvents.get(i).getDate().toString());
+					alleventsetdto.setTotalPrice(Double.toString(listOfUpcomingEvents.get(i).getTotalPrice()));
+					alleventsetdto.setPlannedPower(Double.toString(listOfUpcomingEvents.get(i).getPlannedPower()));
+					
+				listOfUpcomingEventSetDto.add(alleventsetdto);
+				}
+				internalresponse.put("currWeek", listOfWeeklyEventSetDto);
+				internalresponse.put("currMonth", listOfMonthlyEventSetDto);
+				internalresponse.put("upcoming", listOfUpcomingEventSetDto);
+				HashMap<String,Object> eventSetdata = new HashMap<String, Object>();
+				eventSetdata.put("eventSets", internalresponse);
+				response.put("responseStatus", "1");
+				response.put("responseMessage", "The request was successfully served.");
+				response.put("eventSets", internalresponse);
+				response.put("customMessage", CustomMessages.getCustomMessages("SL"));
+
+			}
+
+		 catch (Exception e) {
+			System.out.println("Error in checkExistence" + e.getMessage());
+			e.printStackTrace();
+			response.put("responseStatus", "2");
+			response.put("responseMessage", "Internal Server Error");
+			response.put("response", null);
+			response.put("customMessage", null);
+
+		}
+		return response;
+	}
+
 }

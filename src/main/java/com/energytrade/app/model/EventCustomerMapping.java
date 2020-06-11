@@ -69,6 +69,29 @@ public class EventCustomerMapping implements Serializable {
 	@Column(name="counter_bid_amount")
 	private double counterBidAmount;
 	
+	@Column(name="customer_net_meter_reading_s")
+	private double customerNetMeterReadings;
+	
+	@Column(name="customer_net_meter_reading_e")
+	private double customerNetMeterReadinge;
+	
+	
+	public double getCustomerNetMeterReadings() {
+		return customerNetMeterReadings;
+	}
+
+	public void setCustomerNetMeterReadings(double customerNetMeterReadings) {
+		this.customerNetMeterReadings = customerNetMeterReadings;
+	}
+
+	public double getCustomerNetMeterReadinge() {
+		return customerNetMeterReadinge;
+	}
+
+	public void setCustomerNetMeterReadinge(double customerNetMeterReadinge) {
+		this.customerNetMeterReadinge = customerNetMeterReadinge;
+	}
+
 	public double getCustomerFine() {
 		return customerFine;
 	}

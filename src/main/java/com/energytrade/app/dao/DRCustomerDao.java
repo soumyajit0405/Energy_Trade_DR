@@ -12,9 +12,11 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.energytrade.app.model.AllUser;
+import com.energytrade.app.model.DRContracts;
 import com.energytrade.app.model.DevicePl;
 import com.energytrade.app.model.EventCustomerMapping;
 import com.energytrade.app.model.EventSetEventDto;
+import com.energytrade.app.model.KiotUserMapping;
 import com.energytrade.app.model.UserAccessTypeMapping;
 import com.energytrade.app.model.UserDRDevices;
 import com.energytrade.app.model.UserDevice;
@@ -29,6 +31,7 @@ import com.energytrade.app.dto.DRDeviceDto;
 import com.energytrade.app.dto.EventSetDetailsDto;
 import com.energytrade.app.model.AllEvent;
 import com.energytrade.app.model.AllEventSet;
+import com.energytrade.app.model.AllKiotSwitch;
 
 @Transactional
 @Repository
@@ -36,18 +39,24 @@ public class DRCustomerDao {
 
 	@Autowired
 	DRCustomerRepository drCustomerRepo;
-	
+
 	@Autowired
 	AllUserRepository alluserrepo;
-	
+
 	@Autowired
 	UserAccessRepository useraccessrepo;
-	
+
 	@Autowired
 	UserDRDevicesRepository userdrdevicerepo;
-	
+
 	@Autowired
 	EventCustomerRepository eventCustomerRepo;
+
+	@Autowired
+	KiotUserMappingRepository kiotUserMappingRepo;
+
+	@Autowired
+	AllKiotSwitchesRepository allKiotSwithcesRepo;
 
 	public HashMap<String, Object> getBusinessContractDetails(String contractNumber) {
 		HashMap<String, Object> response = new HashMap<String, Object>();
@@ -76,23 +85,24 @@ public class DRCustomerDao {
 			ustmp.setAllUser(alluser);
 			ustmp.setUserTypepl(userType);
 			useraccessrepo.saveAndFlush(ustmp);
-			
+
 			response.put("message", CustomMessages.getCustomMessages("AS"));
 			response.put("key", "200");
 			response.put("userId", alluser.getUserId());
 			response.put("userRole", alluser.getUserRolesPl().getUserRoleName());
-			response.put("name",alluser.getFullName());
-	    	   response.put("phoneNumber",alluser.getPhoneNumber());
-	    	   List<HashMap<String,String>> listOfAccessLevels = new ArrayList<>();
-	    	   if (alluser.getUserAccessMap() != null) {
-	    		   for (int i=0;i<alluser.getUserAccessMap().size();i++) {
-	    			   HashMap<String,String> userAccessLevel = new HashMap<>();
-	    			   userAccessLevel.put("accessLevel", alluser.getUserAccessMap().get(i).getUserTypepl().getUserTypeName());
-	    			   listOfAccessLevels.add(userAccessLevel);
-	    			   
-	    		   }
-	    	   response.put("userTypes", listOfAccessLevels);
-	    	   }
+			response.put("name", alluser.getFullName());
+			response.put("phoneNumber", alluser.getPhoneNumber());
+			List<HashMap<String, String>> listOfAccessLevels = new ArrayList<>();
+			if (alluser.getUserAccessMap() != null) {
+				for (int i = 0; i < alluser.getUserAccessMap().size(); i++) {
+					HashMap<String, String> userAccessLevel = new HashMap<>();
+					userAccessLevel.put("accessLevel",
+							alluser.getUserAccessMap().get(i).getUserTypepl().getUserTypeName());
+					listOfAccessLevels.add(userAccessLevel);
+
+				}
+				response.put("userTypes", listOfAccessLevels);
+			}
 		} catch (Exception e) {
 			System.out.println("Error in checkExistence" + e.getMessage());
 			e.printStackTrace();
@@ -114,19 +124,30 @@ public class DRCustomerDao {
 				eventSetDetailsDto.setCreatedTs(customerEventSets.get(i).getCreatedTs());
 				eventSetDetailsDto.setEventSetStatus(customerEventSets.get(i).getEventSetStatusPl().getStatusName());
 				eventSetDetailsDto.setEventSetName(customerEventSets.get(i).getName());
+				eventSetDetailsDto.setEventSetDate(customerEventSets.get(i).getDate());
 				List<EventSetEventDto> listOfEvents = new ArrayList<EventSetEventDto>();
 
 				List<AllEvent> eventsForCustomer = drCustomerRepo.getEventsForCustomerAndEventSet(customerId,
 						customerEventSets.get(i).getEventSetId());
 
 				for (int j = 0; j < eventsForCustomer.size(); j++) {
+					EventCustomerMapping evmp = drCustomerRepo.getEventCustomerMapping(customerId,
+							eventsForCustomer.get(j).getEventId());
 					EventSetEventDto eventSetEvent = new EventSetEventDto();
 					eventSetEvent.setEventId(eventsForCustomer.get(j).getEventId());
 					eventSetEvent.setPlannedPower(String.valueOf(eventsForCustomer.get(j).getPlannedPower()));
 					eventSetEvent.setPlannedPrice(String.valueOf(eventsForCustomer.get(j).getExpectedPrice()));
-					EventCustomerMapping ecm = drCustomerRepo.getEventCustomerMapping(customerId,
-							eventsForCustomer.get(j).getEventId());
-					eventSetEvent.setEventCustomerMappingStatus(String.valueOf(ecm.getEventCustomerStatusId()));
+					eventSetEvent.setEventName(eventsForCustomer.get(j).getEventName());
+					eventSetEvent.setEventStartTime(eventsForCustomer.get(j).getEventStartTime());
+					eventSetEvent.setEventEndTime(eventsForCustomer.get(j).getEventEndTime());
+					eventSetEvent.setEventEndTime(eventsForCustomer.get(j).getEventEndTime());
+					eventSetEvent.setCommittedPower(eventsForCustomer.get(j).getCommitedPower());
+					eventSetEvent.setActualPower(eventsForCustomer.get(j).getActualPower());
+					eventSetEvent.setBidprice(evmp.getBidPrice());
+					eventSetEvent.setCounterBidAmount(evmp.getCounterBidAmount());
+					eventSetEvent.setCounterBidFlag(evmp.getCounterBidFlag());
+					eventSetEvent.setCustomerFine(evmp.getCustomerFine());
+					eventSetEvent.setEventCustomerMappingStatus(String.valueOf(evmp.getEventCustomerStatusId()));
 
 					listOfEvents.add(eventSetEvent);
 
@@ -136,7 +157,7 @@ public class DRCustomerDao {
 			}
 
 			response.put("eventSets", eventSetDetailsDtoList);
-			response.put("message", CustomMessages.getCustomMessages("AS"));
+			response.put("message", CustomMessages.getCustomMessages("SUC"));
 			response.put("key", "200");
 		} catch (Exception e) {
 			System.out.println("Error in checkExistence" + e.getMessage());
@@ -168,11 +189,11 @@ public class DRCustomerDao {
 				customerEventDetails.setCreatedTs(cusomterEvents.get(i).getCreatedTs());
 				if (cusomterEvents.get(i).getIsFineApplicable() != null) {
 					customerEventDetails.setIsFineApplicable(cusomterEvents.get(i).getIsFineApplicable());
-				} 
-				
+				}
+
 				if (Double.valueOf(cusomterEvents.get(i).getBuyerFine()) != null) {
 					customerEventDetails.setBuyerFine(cusomterEvents.get(i).getBuyerFine());
-				} 
+				}
 				// customerEventDetails.setAllCustomerDevices(drCustomerRepo.getAllUserDevices(customerId));
 				EventCustomerMapping ecm = drCustomerRepo.getEventCustomerMapping(customerId,
 						cusomterEvents.get(i).getEventId());
@@ -188,13 +209,13 @@ public class DRCustomerDao {
 				cem.setCreatedTs(ecm.getCreatedTs());
 				if (ecm.getIsFineApplicable() != null) {
 					cem.setIsFineApplicable(ecm.getIsFineApplicable());
-				} 
-				
+				}
+
 				if (Double.valueOf(ecm.getCustomerFine()) != null) {
 					cem.setCustomerFine(ecm.getCustomerFine());
-				} 
+				}
 				List<UserDRDevices> udd = drCustomerRepo.getuserMappedDevices(ecm.getEventCustomerMappingId());
-				
+
 				List<DRDeviceDto> mappedDevices = new ArrayList<DRDeviceDto>();
 				for (int j = 0; j < udd.size(); j++) {
 					DRDeviceDto mappedDevice = new DRDeviceDto();
@@ -215,6 +236,7 @@ public class DRCustomerDao {
 				ddd.setDeviceCapacity(aud.get(i).getDevice_capacity());
 				ddd.setDrDeviceId(aud.get(i).getUserDrDeviceId());
 				ddd.setDrDeviceName(aud.get(i).getDeviceName());
+				ddd.setPortNumber(aud.get(i).getPortNumber());
 				userDRdevices.add(ddd);
 			}
 			response.put("events", allEvents);
@@ -231,12 +253,12 @@ public class DRCustomerDao {
 		}
 		return response;
 	}
-	
+
 	public HashMap<String, Object> getDRCustomerProfile(int customerId) {
 		HashMap<String, Object> response = new HashMap<String, Object>();
 		try {
 			AllUser alluser = alluserrepo.getUserById(customerId);
-			HashMap<String,Object> userDetails = new HashMap<>();
+			HashMap<String, Object> userDetails = new HashMap<>();
 			response.put("fullName", alluser.getFullName());
 			response.put("phoneNumber", alluser.getPhoneNumber());
 			response.put("email", alluser.getEmail());
@@ -246,35 +268,42 @@ public class DRCustomerDao {
 				response.put("registrationDate", null);
 			}
 			response.put("activeStatus", alluser.getActiveStatus());
-			List<HashMap<String,String>> listOfAccessLevels = new ArrayList<>();
-			 if (alluser.getUserAccessMap() != null) {
-				   for (int i=0;i<alluser.getUserAccessMap().size();i++) {
-					   HashMap<String,String> userAccessLevel = new HashMap<>();
-					   userAccessLevel.put("accessLevel", alluser.getUserAccessMap().get(i).getUserTypepl().getUserTypeName());
-					   listOfAccessLevels.add(userAccessLevel);
-					   
-				   }
-			 }	   
-			 response.put("userType", listOfAccessLevels);
-			   if (alluser.getDrContractNumber() != null) {
-				   response.put("drContractNumber", alluser.getDrContractNumber());
-				} else {
-					response.put("drContractNumber", null);
-				}
-			   List<UserDRDevices> aud = drCustomerRepo.getAllUserDevices(customerId);
-				List<DRDeviceDto> userDRdevices = new ArrayList<DRDeviceDto>();
+			List<HashMap<String, String>> listOfAccessLevels = new ArrayList<>();
+			if (alluser.getUserAccessMap() != null) {
+				for (int i = 0; i < alluser.getUserAccessMap().size(); i++) {
+					HashMap<String, String> userAccessLevel = new HashMap<>();
+					userAccessLevel.put("accessLevel",
+							alluser.getUserAccessMap().get(i).getUserTypepl().getUserTypeName());
+					listOfAccessLevels.add(userAccessLevel);
 
-				for (int i = 0; i < aud.size(); i++) {
-					DRDeviceDto ddd = new DRDeviceDto();
-					ddd.setDeviceCapacity(aud.get(i).getDevice_capacity());
-					ddd.setDrDeviceId(aud.get(i).getUserDrDeviceId());
-					ddd.setDrDeviceName(aud.get(i).getDeviceName());
-					userDRdevices.add(ddd);
 				}
-				response.put("drCustomerDevice", userDRdevices);
+			}
+			response.put("userType", listOfAccessLevels);
+			if (alluser.getDrContractNumber() != null) {
+				response.put("drContractNumber", alluser.getDrContractNumber());
+			} else {
+				response.put("drContractNumber", null);
+			}
+			List<UserDRDevices> aud = drCustomerRepo.getAllUserDevices(customerId);
+			List<DRDeviceDto> userDRdevices = new ArrayList<DRDeviceDto>();
 
-			 response.put("drContractDetails", drCustomerRepo.getBusinessContractDetails(alluser.getDrContractNumber()));
-			//response.put("eventSets", eventSetDetailsDtoList);
+			for (int i = 0; i < aud.size(); i++) {
+				DRDeviceDto ddd = new DRDeviceDto();
+				ddd.setDeviceCapacity(aud.get(i).getDevice_capacity());
+				ddd.setDrDeviceId(aud.get(i).getUserDrDeviceId());
+				ddd.setDrDeviceName(aud.get(i).getDeviceName());
+				ddd.setPortNumber(aud.get(i).getPortNumber());
+				AllKiotSwitch kiotSwitch= allKiotSwithcesRepo.getAllKiotSwitchesById(Integer.parseInt((aud.get(i).getPortNumber())));
+				ddd.setCustomData(kiotSwitch.getCustomData());
+				ddd.setKiotDeviceId(Integer.toString(kiotSwitch.getId()));
+				ddd.setUsedFlag(kiotSwitch.getUsedFlag());
+				ddd.setDeviceName(kiotSwitch.getDeviceCustomName());
+				userDRdevices.add(ddd);
+			}
+			response.put("drCustomerDevice", userDRdevices);
+
+			response.put("drContractDetails", drCustomerRepo.getBusinessContractDetails(alluser.getDrContractNumber()));
+			// response.put("eventSets", eventSetDetailsDtoList);
 			response.put("message", CustomMessages.getCustomMessages("FS"));
 			response.put("key", "200");
 		} catch (Exception e) {
@@ -286,34 +315,44 @@ public class DRCustomerDao {
 		}
 		return response;
 	}
-	
-	
+
 	public List<HashMap<String, Object>> getAllCustomers() {
-		
+
 		List<HashMap<String, Object>> userList = new ArrayList<>();
 		try {
 			List<AllUser> users = alluserrepo.getAllDrCustomers();
-			for (AllUser user: users) {
-				double capacity =0;
+			
+			for (AllUser user : users) {
+				double capacity = 0;
+				DRContracts drcontracts = alluserrepo.getDrContracts(user.getDrContractNumber());
 				HashMap<String, Object> response = new HashMap<String, Object>();
-				response.put("customerId",user.getUserId());
-				response.put("customerName",user.getFullName());
-				response.put("customerType","");
-				response.put("contactNumber",user.getPhoneNumber());
+				response.put("customerId", user.getUserId());
+				response.put("customerName", user.getFullName());
+				response.put("customerType", "");
+				response.put("contactNumber", user.getPhoneNumber());
 				if (user.getUserDrDevices() != null) {
-					response.put("energyAssets",user.getUserDrDevices().size());
-					for (UserDRDevices device:user.getUserDrDevices()) {
+					response.put("energyAssets", user.getUserDrDevices().size());
+					for (UserDRDevices device : user.getUserDrDevices()) {
 						capacity = capacity + device.getDevice_capacity();
 					}
-					response.put("flexibleCapacity",capacity);
+					response.put("flexibleCapacity", capacity);
 				} else {
-					response.put("energyAssets",0);
-					response.put("flexibleCapacity",0);
+					response.put("energyAssets", 0);
+					response.put("flexibleCapacity", 0);
 				}
-			userList.add(response);	
-			}	
-			
-			
+				if (drcontracts != null) {
+					response.put("division", drcontracts.getDivision());
+					response.put("contractAccount", drcontracts.getContactNumber());
+					response.put("meterNumber", drcontracts.getMeterNumber());
+					response.put("sL", drcontracts.getSl());
+					response.put("billedMus", drcontracts.getBilledMus());
+					response.put("companyName", drcontracts.getCompnayName());
+					response.put("companyAddress", drcontracts.getCompanyAddress());
+					response.put("type", drcontracts.getCompanyType());
+				}
+				userList.add(response); 
+			}
+
 		} catch (Exception e) {
 			System.out.println("Error in checkExistence" + e.getMessage());
 			e.printStackTrace();
@@ -324,12 +363,14 @@ public class DRCustomerDao {
 		}
 		return userList;
 	}
-	
-	public HashMap<String, Object> updateDRCustomerDevice(HashMap<String,Object> inputDetails) {
+
+	public HashMap<String, Object> updateDRCustomerDevice(HashMap<String, Object> inputDetails) {
 
 		HashMap<String, Object> response = new HashMap<String, Object>();
 		try {
-			drCustomerRepo.updateDrDeviceDetails((String)inputDetails.get("deviceName"),Double.parseDouble((String)inputDetails.get("deviceCapacity")) ,(int) inputDetails.get("userDrDeviceId"));	
+			drCustomerRepo.updateDrDeviceDetails((String) inputDetails.get("deviceName"),
+					Double.parseDouble((String) inputDetails.get("deviceCapacity")),
+					(int) inputDetails.get("userDrDeviceId"));
 			response.put("message", CustomMessages.getCustomMessages("AS"));
 			response.put("key", "200");
 		} catch (Exception e) {
@@ -341,11 +382,13 @@ public class DRCustomerDao {
 		}
 		return response;
 	}
-	
+
 	public HashMap<String, Object> deleteDrDevice(int userDrDeviceId) {
 
 		HashMap<String, Object> response = new HashMap<String, Object>();
 		try {
+			UserDRDevices drDevice = drCustomerRepo.getDrDeviceDetails(userDrDeviceId);
+			drCustomerRepo.updateKiotSwitch(Integer.parseInt(drDevice.getPortNumber()));
 			drCustomerRepo.deleteEventCustomerDevices(userDrDeviceId);
 			drCustomerRepo.deleteDrDeviceDetails(userDrDeviceId);
 			response.put("message", CustomMessages.getCustomMessages("DS"));
@@ -360,89 +403,90 @@ public class DRCustomerDao {
 		return response;
 	}
 
-    public HashMap<String,Object> addDrDevice(HashMap<String,Object> deviceDetails) {
-        
-    	HashMap<String,Object> response=new HashMap<String, Object>();
-    	try {
-        	AllUser alluser=alluserrepo.getUserById((int)(deviceDetails.get("userId")));
-        	List<HashMap<String,String>> listOfUserDevice=(ArrayList<HashMap<String,String>>)deviceDetails.get("deviceDetails");
-        	int count=userdrdevicerepo.getDrDeviceCount();
-        	ArrayList<UserDRDevices> listofDevices = new ArrayList<UserDRDevices>();
-        	for(int i=0;i<listOfUserDevice.size();i++) {
-        		HashMap<String,String> drdeviceDetails = listOfUserDevice.get(i);
-        		count= count+1;
-        		UserDRDevices userdrdevices = new UserDRDevices();
-        		userdrdevices.setAllUser(alluser);
-        		userdrdevices.setUserDrDeviceId(count);
-        		userdrdevices.setDeviceName(drdeviceDetails.get("deviceName"));
-        		userdrdevices.setDevice_capacity(Double.parseDouble(drdeviceDetails.get("deviceCapacity")));
-        		listofDevices.add(userdrdevices);
-        		
-        	}
-        	userdrdevicerepo.saveAll(listofDevices);
-        	response.put("message",CustomMessages.getCustomMessages("SUC"));
-      	   response.put("key","200");
-        	
-        }
-        catch (Exception e) {
-            System.out.println("Error in checkExistence" + e.getMessage());
-            e.printStackTrace();
-            response.put("message",CustomMessages.getCustomMessages("ISE"));
-     	   response.put("key","500");
-           
-        }
-        return response;
-    }
+	public HashMap<String, Object> addDrDevice(HashMap<String, Object> deviceDetails) {
 
-    
-    public HashMap<String,Object> getEventCounts(int userId) {
-        
-    	HashMap<String,Object> response=new HashMap<String, Object>();
-    	int createdEvents=0,publishedEvents=0,completedEvents=0,cancelledEvents =0,gateClosedEvents=0,expiredEvents=0,lockedEvents=0,liveEvents=0;
-    	try {
-        	List<EventCustomerMapping> eventCustomerMappings=eventCustomerRepo.getEventCustomerByUserId(userId);
-        	for (EventCustomerMapping evmp: eventCustomerMappings) {
-        		if (evmp.getAllEvent().getEventStatusPl().getEventStatusId()== 1) {
-        			createdEvents++;
-        		} else if (evmp.getAllEvent().getEventStatusPl().getEventStatusId()== 2) {
-        			publishedEvents++;
-        		}else if (evmp.getAllEvent().getEventStatusPl().getEventStatusId()== 3) {
-        			completedEvents++;
-        		}else if (evmp.getAllEvent().getEventStatusPl().getEventStatusId()== 4) {
-        			cancelledEvents++;
-        		}else if (evmp.getAllEvent().getEventStatusPl().getEventStatusId()== 5) {
-        			gateClosedEvents++;
-        		}else if (evmp.getAllEvent().getEventStatusPl().getEventStatusId()== 6) {
-        			expiredEvents++;
-        		}else if (evmp.getAllEvent().getEventStatusPl().getEventStatusId()== 7) {
-        			lockedEvents++;
-        		}else if (evmp.getAllEvent().getEventStatusPl().getEventStatusId()== 8) {
-        			liveEvents++;
-        		}
-        	}
-        	
-        	response.put("liveEvents", liveEvents);
-        	response.put("lockedEvents", lockedEvents);
-        	response.put("expiredEvents", expiredEvents);
-        	response.put("gateClosedEvents", gateClosedEvents);
-        	response.put("cancelledEvents", cancelledEvents);
-        	response.put("cancelledEvents", cancelledEvents);
-        	response.put("publishedEvents", publishedEvents);
-        	response.put("createdEvents", createdEvents);
-        	response.put("message",CustomMessages.getCustomMessages("SUC"));
-      	   	response.put("key","200");
-        	
-        }
-        catch (Exception e) {
-            System.out.println("Error in checkExistence" + e.getMessage());
-            e.printStackTrace();
-            response.put("message",CustomMessages.getCustomMessages("ISE"));
-     	   response.put("key","500");
-           
-        }
-        return response;
-    }
+		HashMap<String, Object> response = new HashMap<String, Object>();
+		try {
+			AllUser alluser = alluserrepo.getUserById((int) (deviceDetails.get("userId")));
+			KiotUserMapping kiotUserMapping = kiotUserMappingRepo
+					.getKiotUserMappingByContract(alluser.getDrContractNumber());
+			List<AllKiotSwitch> kiotSwitches = allKiotSwithcesRepo
+					.getAllKiotSwitches(kiotUserMapping.getKiotUserMappingId());
+			List<HashMap<String, String>> listOfUserDevice = (ArrayList<HashMap<String, String>>) deviceDetails
+					.get("deviceDetails");
+			if (kiotSwitches.isEmpty()) {
+				response.put("message", "No switches available. Cannot add device");
+				response.put("key", "200");
+				return response;
+			} else if (kiotSwitches.size() < listOfUserDevice.size()) {
+				response.put("message", "Not enough switches. Cannot add device");
+				response.put("key", "200");
+				return response;
+			}
 
+			int count = userdrdevicerepo.getDrDeviceCount();
+			ArrayList<UserDRDevices> listofDevices = new ArrayList<UserDRDevices>();
+			for (int i = 0; i < listOfUserDevice.size(); i++) {
+				HashMap<String, String> drdeviceDetails = listOfUserDevice.get(i);
+				count = count + 1;
+				UserDRDevices userdrdevices = new UserDRDevices();
+				userdrdevices.setAllUser(alluser);
+				userdrdevices.setUserDrDeviceId(count);
+				userdrdevices.setDeviceName(drdeviceDetails.get("deviceName"));
+				userdrdevices.setDevice_capacity(Double.parseDouble(drdeviceDetails.get("deviceCapacity")));
+				userdrdevices.setPortNumber(Integer.toString(kiotSwitches.get(i).getId()));
+				allKiotSwithcesRepo.updateKiotSwicthes(kiotSwitches.get(i).getId());
+				kiotSwitches.remove(i);
+				listofDevices.add(userdrdevices);
+
+			}
+			userdrdevicerepo.saveAll(listofDevices);
+			response.put("message", CustomMessages.getCustomMessages("SUC"));
+			response.put("key", "200");
+
+		} catch (Exception e) {
+			System.out.println("Error in checkExistence" + e.getMessage());
+			e.printStackTrace();
+			response.put("message", CustomMessages.getCustomMessages("ISE"));
+			response.put("key", "500");
+
+		}
+		return response;
+	}
+
+	public HashMap<String, Object> getEventCounts(int userId) {
+
+		HashMap<String, Object> response = new HashMap<String, Object>();
+		int penaltyEventsCount = 0, participatedEventsCount = 0, successfulEventsCount = 0, cancelledEventsCount = 0;
+		try {
+			List<EventCustomerMapping> eventCustomerMappings = eventCustomerRepo.getEventCustomerByUserId(userId);
+			for (EventCustomerMapping evmp : eventCustomerMappings) {
+				if (evmp.getEventCustomerStatusId() == 3) {
+					participatedEventsCount++;
+				} else if (evmp.getEventCustomerStatusId() == 8 && evmp.getIsFineApplicable().equalsIgnoreCase("N")) {
+					successfulEventsCount++;
+				} else if (evmp.getEventCustomerStatusId() == 8 && evmp.getIsFineApplicable().equalsIgnoreCase("Y")) {
+					penaltyEventsCount++;
+				} else if (evmp.getEventCustomerStatusId() == 9) {
+					cancelledEventsCount++;
+				}
+			}
+
+			response.put("participatedEventsCount", participatedEventsCount);
+			response.put("successfulEventsCount", successfulEventsCount);
+			response.put("penaltyEventsCount", penaltyEventsCount);
+			response.put("cancelledEventsCount", cancelledEventsCount);
+			response.put("message", CustomMessages.getCustomMessages("SUC"));
+			response.put("key", "200");
+
+		} catch (Exception e) {
+			System.out.println("Error in checkExistence" + e.getMessage());
+			e.printStackTrace();
+			response.put("message", CustomMessages.getCustomMessages("ISE"));
+			response.put("key", "500");
+
+		}
+		return response;
+	}
 
 }
-

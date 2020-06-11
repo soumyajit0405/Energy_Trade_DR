@@ -50,6 +50,17 @@ public class UserDRDevices {
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "sync_ts")
 	private Date syncTs;
+	
+	@Column(name = "port_number")
+	private String portNumber;
+
+	public String getPortNumber() {
+		return portNumber;
+	}
+
+	public void setPortNumber(String portNumber) {
+		this.portNumber = portNumber;
+	}
 
 	private byte softdeleteflag;
 

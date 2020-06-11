@@ -16,7 +16,15 @@ public class AllEventSetDto extends AbstractBaseDto {
 	private String dateOfOccurence;
 	private String plannedPower;
 	private String actualPower;
-	private String totlaPrice;
+	private String totalPrice;
+	public String getTotalPrice() {
+		return totalPrice;
+	}
+
+	public void setTotalPrice(String totalPrice) {
+		this.totalPrice = totalPrice;
+	}
+
 	private String publishedEvents;
 	private String completedEvents;
 	private String cancelledEvents;
@@ -65,14 +73,6 @@ public class AllEventSetDto extends AbstractBaseDto {
 
 	public void setActualPower(String actualPower) {
 		this.actualPower = actualPower;
-	}
-
-	public String getTotlaPrice() {
-		return totlaPrice;
-	}
-
-	public void setTotlaPrice(String totlaPrice) {
-		this.totlaPrice = totlaPrice;
 	}
 
 	public String getPublishedEvents() {

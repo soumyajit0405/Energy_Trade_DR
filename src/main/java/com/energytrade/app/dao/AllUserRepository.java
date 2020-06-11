@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import com.energytrade.app.model.AllElectricityBoard;
 import com.energytrade.app.model.AllState;
 import com.energytrade.app.model.AllUser;
+import com.energytrade.app.model.DRContracts;
 import com.energytrade.app.model.LocalityPl;
 import com.energytrade.app.model.StateBoardMapping;
 import com.energytrade.app.model.UserRolesPl;
@@ -31,6 +32,9 @@ public interface AllUserRepository extends JpaRepository<AllUser, Long>
     
     @Query("Select a from AllUser a where a.drContractNumber is not null")
     List<AllUser> getAllDrCustomers( );
+    
+    @Query("Select a from DRContracts a where a.contractNumber =?1")
+    DRContracts getDrContracts( String contractNumber);
     
     @Query("Select a from UserTypePl a where a.userTypeName=?1")
     UserTypePl getUserType(String type );

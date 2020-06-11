@@ -16,8 +16,8 @@ public class DRService extends AbstractBaseService
     @Autowired
     private DRDao drdao;
     
-    public HashMap<String,Object> createEventSet(String filePath, byte [] imageByte, String location, int userId) {
-         return this.drdao.createEventSet(filePath, imageByte, location, userId);
+    public HashMap<String,Object> createEventSet(String filePath, byte [] imageByte, String location, int userId, String uploadDate) {
+         return this.drdao.createEventSet(filePath, imageByte, location, userId,uploadDate );
     }
           
     public HashMap<String, Object> loginUser(String phoneNumber, String password) {
@@ -52,11 +52,19 @@ public class DRService extends AbstractBaseService
     	return drdao.rejectCustomer(eventId, customerId);
     }
     
+    public HashMap<String,Object> rejectCounterBid(int eventId, int customerId) {
+    	return drdao.rejectCounterBid(eventId, customerId);
+    }
+    
     public HashMap<String,Object> acceptCounterBid(int eventId, int customerId) {
     	return drdao.acceptCounterBid(eventId, customerId);
     }
     
     public HashMap<String,Object> cancelEvent(int event) {
     	return drdao.cancelEvent(event);
+    }
+    
+    public HashMap<String, Object> getEventSetsByUser(int userId) throws ParseException {
+    	return drdao.getEventSetsByUser(userId);
     }
 }

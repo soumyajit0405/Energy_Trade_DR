@@ -5,6 +5,51 @@ public class DRDeviceDto extends AbstractBaseDto {
 	private int drDeviceId;
 	private String drDeviceName;
 	private double deviceCapacity;
+	private String portNumber;
+	private String kiotDeviceId;
+	private String deviceName;
+	private String customData;
+	private String usedFlag;
+
+	public String getKiotDeviceId() {
+		return kiotDeviceId;
+	}
+
+	public void setKiotDeviceId(String kiotDeviceId) {
+		this.kiotDeviceId = kiotDeviceId;
+	}
+
+	public String getDeviceName() {
+		return deviceName;
+	}
+
+	public void setDeviceName(String deviceName) {
+		this.deviceName = deviceName;
+	}
+
+	public String getCustomData() {
+		return customData;
+	}
+
+	public void setCustomData(String customData) {
+		this.customData = customData;
+	}
+
+	public String getUsedFlag() {
+		return usedFlag;
+	}
+
+	public void setUsedFlag(String usedFlag) {
+		this.usedFlag = usedFlag;
+	}
+
+	public String getPortNumber() {
+		return portNumber;
+	}
+
+	public void setPortNumber(String portNumber) {
+		this.portNumber = portNumber;
+	}
 
 	public int getDrDeviceId() {
 		return drDeviceId;

@@ -48,11 +48,17 @@ public interface EventRepository extends JpaRepository<AllEvent, Long>
 	 @Query("Select a from AllEvent a where  a.eventId=?1") 
 	  AllEvent getEventById(int eventId);
 	 
-	 @Query("Select a from AllEventSet a where  a.uploadTime >=?1 and a.uploadTime <=?2 and a.eventSetId <>1") 
+	 @Query("Select a from AllEventSet a where  a.date >=?1 and a.date <=?2") 
 	  List<AllEventSet> getEventSetBydate(Date startDate, Date endDate);
 	 
-	 @Query("Select a from AllEventSet a where  a.uploadTime >=?1 and a.eventSetId <>1") 
+	 @Query("Select a from AllEventSet a where  a.date >=?1 and a.date <=?2 and a.allUser.userId=?3") 
+	  List<AllEventSet> getEventSetBydate(Date startDate, Date endDate, int userId);
+	 
+	 @Query("Select a from AllEventSet a where  a.date >=?1") 
 	  List<AllEventSet> getupcomingEventSet(Date startDate);
+	 
+	 @Query("Select a from AllEventSet a where  a.date >=?1  and a.allUser.userId=?2") 
+	  List<AllEventSet> getupcomingEventSet(Date startDate, int userId);
 	 
 	 @Modifying
 	    @Query("update AllEvent a set a.commitedPower=a.commitedPower+?1 where a.eventId=?2")

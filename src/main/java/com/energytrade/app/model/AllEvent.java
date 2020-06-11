@@ -40,6 +40,29 @@ public class AllEvent implements Serializable {
 
 	@Column(name="is_fine_applicable")
 	private String isFineApplicable;
+	
+	@Column(name="dso_net_meter_reading_s")
+	private double dsoNetMeterReadings;
+	
+	@Column(name="dso_net_meter_reading_e")
+	private double dsoNetMeterReadinge;
+	
+
+	public double getDsoNetMeterReadings() {
+		return dsoNetMeterReadings;
+	}
+
+	public void setDsoNetMeterReadings(double dsoNetMeterReadings) {
+		this.dsoNetMeterReadings = dsoNetMeterReadings;
+	}
+
+	public double getDsoNetMeterReadinge() {
+		return dsoNetMeterReadinge;
+	}
+
+	public void setDsoNetMeterReadinge(double dsoNetMeterReadinge) {
+		this.dsoNetMeterReadinge = dsoNetMeterReadinge;
+	}
 
 	public double getBuyerFine() {
 		return buyerFine;

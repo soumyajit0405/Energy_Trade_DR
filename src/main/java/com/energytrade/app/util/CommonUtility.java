@@ -257,11 +257,6 @@ return authCode;
 	        
 	        return true;
 	    }
-	public static void main(String args[]) throws ParseException
-	{
-		CommonUtility cm=new CommonUtility();
-		// cm.checttest();
-	}
 
 	public List<HashMap<String,Object>> convertData(HashMap<String, Object> inputDetails) throws ParseException {
 		
@@ -313,24 +308,34 @@ return authCode;
 		return listOfFormattedData;
 	}
 
-	public ArrayList<Date> getDateFormatted(String time) throws ParseException
+	public static ArrayList<Date> getDateFormatted(String time, Date uploaddate) throws ParseException
 	{
+		//Date c = new Date();
 		ArrayList<Date> ald= new ArrayList<Date>();
 		String arr[]=time.split("-");
-		Date c= new Date();
+		//Date c= new Date("2020-12-31");-
 		// Calendar c = Calendar.getInstance();
 		String t1=arr[0].trim().substring(0, 2);
 		String t2=arr[0].trim().substring(2);
 		String t3=arr[1].trim().substring(0, 2);
 		String t4=arr[1].trim().substring(2);
-		SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd HH:MM:ss");
-		System.out.println(c.getYear()+1900+"-0"+c.getMonth()+"-"+c.getDate()+" "+t1+":"+t2+":00");
-		Date startDate = sdf.parse(c.getYear()+1900+"-0"+c.getMonth()+"-"+c.getDate()+" "+t1+":"+t2+":00");
-		Date endDate = sdf.parse(c.getYear()+1900+"-0"+c.getMonth()+"-"+c.getDate()+" "+t3+":"+t4+":00");
+		SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		int year = uploaddate.getYear()+1900;
+		int month = uploaddate.getMonth()+1;
+		int date = uploaddate.getDate();
+		System.out.println("Start Time : "+year+"-"+month+"-"+date+" "+t1+":"+t2+":00");
+		System.out.println("End Time"+year+"-"+month+"-"+date+" "+t3+":"+t4+":00");
+		Date startDate = sdf.parse(year+"-"+month+"-"+date+" "+t1+":"+t2+":00");
+		Date endDate = sdf.parse(year+"-"+month+"-"+date+" "+t3+":"+t4+":00");
+		System.out.println(startDate);
+		System.out.println(endDate);
 		ald.add(startDate);
 		ald.add(endDate);
 		return ald;
 	}
 	
 	
+	public static void main(String args[]) throws ParseException {
+		// getDateFormatted("2300 - 2315");
+	}
 }
