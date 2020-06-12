@@ -39,6 +39,7 @@ import com.energytrade.app.model.DevicePl;
 import com.energytrade.app.model.EventCustomerMapping;
 import com.energytrade.app.model.EventCustomerStatusPl;
 import com.energytrade.app.model.EventSetStatusPl;
+import com.energytrade.app.model.EventSetVersionHistory;
 import com.energytrade.app.model.EventStatusPl;
 import com.energytrade.app.model.NonTradehourStatusPl;
 import com.energytrade.app.model.NotificationRequestDto;
@@ -53,6 +54,7 @@ import com.energytrade.app.util.CustomMessages;
 import com.energytrade.app.util.PushHelper;
 import com.energytrade.app.util.ValidationUtil;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -75,6 +77,9 @@ public class DRDao extends AbstractBaseDao {
 
 	@Autowired
 	EventCustomerRepository eventcustomerrepo;
+	
+	@Autowired
+	EventSetVersionHistoryRepository eventsetVersionHistRepo;
 
 	public HashMap<String, Object> createEventSet(String filePath, byte[] imageByte, String location, int userId, String date) {
 
@@ -100,6 +105,8 @@ public class DRDao extends AbstractBaseDao {
 				response.put("customMessage", null);
 				return response;
 			}
+			
+			createEventSetVersionHistoryData(imageByte, formatDate);	// This method is saving file as Base64 string in Database
 			
 			ArrayList<Object> eventSetObjects = createEventSetData(location, userId, date);
 			AllEventSetDto allEventSets = (AllEventSetDto) eventSetObjects.get(0);
@@ -136,6 +143,20 @@ public class DRDao extends AbstractBaseDao {
 
 		}
 		return response;
+	}
+	
+	public EventSetVersionHistory createEventSetVersionHistoryData(byte[] imageByte, Date uploadDate) {
+		EventSetVersionHistory eventSetVerHist = new EventSetVersionHistory();
+		Timestamp ts = new Timestamp(uploadDate.getTime());
+		int evenSetId = eventsetrepo.getEventSetCount() + 1;
+		String uploadedFile = Base64.encodeBase64String(imageByte);
+		eventSetVerHist.setEventSetId(evenSetId);
+		eventSetVerHist.setVersion(1);
+		eventSetVerHist.setUploadedFile(uploadedFile);
+		eventSetVerHist.setCreatedTs(ts);
+		
+		eventsetVersionHistRepo.saveAndFlush(eventSetVerHist);
+		return eventSetVerHist;
 	}
 
 	public ArrayList<Object> createEventSetData(String location, int userId, String uploadDate) {
