@@ -39,20 +39,18 @@ public class DRController extends AbstractBaseController
             byte[] imageByte=Base64.decodeBase64(imageDataArr);
             
             String directory="/home/"+"sample.xlsx";
-            //String directory="C:\\Soumyajit\\ET-files-20200417T033846Z-001\\ET-files\\EnergyTrade-DR\\"+"sample.xlsx";
-            response =  drservice.createEventSet(directory, imageByte,location, userId, uploadDate);
+            response =  drservice.createEventSet(directory, imageByte, location, userId, uploadDate);
             
         }
         catch(Exception e)
         {
         	e.printStackTrace();
-            //return "error = "+e;
         }
         return response;
     }
 	
-	@RequestMapping(value=REST+"reuploadEventSet/{location}/{userId}/{uploadDate}",method = RequestMethod.POST,headers="Accept=application/json")
-    public HashMap<String,Object> reuploadEventSet(@RequestBody HashMap<String,String> inputDetails, @PathVariable("location") String location, @PathVariable("userId") int userId,@PathVariable("uploadDate") String uploadDate)
+	@RequestMapping(value=REST+"reUploadEventSet/{eventSetId}",method = RequestMethod.POST,headers="Accept=application/json")
+    public HashMap<String,Object> reuploadEventSet(@RequestBody HashMap<String,String> inputDetails, @PathVariable("eventSetId") int eventSetId)
     {
 		HashMap<String,Object> response = new HashMap<String, Object>();
         try
@@ -62,14 +60,12 @@ public class DRController extends AbstractBaseController
             byte[] imageByte=Base64.decodeBase64(imageDataArr);
             
             String directory="/home/"+"sample.xlsx";
-            //String directory="C:\\Soumyajit\\ET-files-20200417T033846Z-001\\ET-files\\EnergyTrade-DR\\"+"sample.xlsx";
-            response =  drservice.updateEventSet(directory, imageByte,location, userId, uploadDate);
+            response =  drservice.updateEventSet(directory, imageByte, eventSetId);
             
         }
         catch(Exception e)
         {
         	e.printStackTrace();
-            //return "error = "+e;
         }
         return response;
 

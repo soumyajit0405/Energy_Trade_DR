@@ -17,11 +17,11 @@ public class DRService extends AbstractBaseService
     private DRDao drdao;
     
     public HashMap<String,Object> createEventSet(String filePath, byte [] imageByte, String location, int userId, String uploadDate) {
-         return this.drdao.createEventSet(filePath, imageByte, location, userId,uploadDate );
+         return this.drdao.createEventSet(filePath, imageByte, location, userId, uploadDate);
     }
     
-    public HashMap<String,Object> updateEventSet(String filePath, byte [] imageByte, String location, int userId, String uploadDate) {
-        return this.drdao.updateEventSet(filePath, imageByte, location, userId,uploadDate );
+    public HashMap<String,Object> updateEventSet(String filePath, byte [] imageByte, int eventSetId) {
+        return this.drdao.updateEventSet(filePath, imageByte, eventSetId);
    }
           
     public HashMap<String, Object> loginUser(String phoneNumber, String password) {

@@ -151,14 +151,16 @@ public class DRDao extends AbstractBaseDao {
 		return response;
 	}
 	
-	public HashMap<String, Object> updateEventSet(String filePath, byte[] imageByte, String location, int userId, String date) {
+	public HashMap<String, Object> updateEventSet(String filePath, byte[] imageByte, int eventSetId) {
 
 		HashMap<String, Object> response = new HashMap<String, Object>();
 		HashMap<String, Object> internalresponse = new HashMap<String, Object>();
 		try {
+			AllEventSet eventSet = eventsetrepo.getEventSet(eventSetId);
+			AllUser alluser = eventSet.getAllUser();
 			Date today = new Date();
 			DateFormat targetFormat = new SimpleDateFormat("yyyy-MM-dd");
-			Date formatDate = targetFormat.parse(date);
+			Date formatDate = eventSet.getDate();
 			String todates= targetFormat.format(today);
 			Date toDate = targetFormat.parse(todates);
 			if (toDate.compareTo(formatDate) > 0) {
@@ -168,7 +170,7 @@ public class DRDao extends AbstractBaseDao {
 				response.put("customMessage", null);
 				return response;
 			}
-			if (eventsetrepo.getEventSetCountPerDay(formatDate, userId) == 0) {
+			if (eventsetrepo.getEventSetCountPerDay(formatDate, alluser.getUserId()) == 0) {
 				response.put("responseStatus", "1");
 				response.put("responseMessage", "No event set for this location and date");
 				response.put("response", internalresponse);
@@ -177,18 +179,16 @@ public class DRDao extends AbstractBaseDao {
 			}
 			
 			createOrUpdateEventSetVersionHistoryData(imageByte, formatDate);	// This method is saving file as Base64 string in Database
-			
-			AllUser alluser = eventsetrepo.getUserById(userId);
-			ArrayList<Object> eventSetObjects = updateEventSetData(userId);
-			AllEventSetDto allEventSets = (AllEventSetDto) eventSetObjects.get(0);
-			Timestamp ts = new Timestamp(formatDate.getTime());
-			String dateArr[]=date.split("-");
-			allEventSets.setEventSetName(dateArr[0]+dateArr[1]+dateArr[2]+location );
-			allEventSets.setUserId(alluser.getUserId());
+			int userId = alluser.getUserId();
+			eventSet = updateEventSetData(userId, eventSetId);
+			AllEventSetDto allEventSets = new AllEventSetDto();
+			allEventSets.setEventSetId(eventSetId);
+			allEventSets.setEventSetName(eventSet.getName());
+			allEventSets.setUserId(userId);
 			allEventSets.setUserName(alluser.getFullName());
 			allEventSets.setEventSetStatus("Created");
-			allEventSets.setDateOfOccurence(ts.toString());
-			List<AllEventDto> listOfEvents = createFile(filePath, imageByte, eventSetObjects.get(1));
+			allEventSets.setDateOfOccurence(eventSet.getUploadTime().toString());
+			List<AllEventDto> listOfEvents = createFile(filePath, imageByte, eventSet);
 			
 			allEventSets.setAllEvents(listOfEvents);
 			ArrayList<String> powerAndPrice = getPower(listOfEvents);
@@ -236,23 +236,14 @@ public class DRDao extends AbstractBaseDao {
 		return eventSetVerHist;
 	}
 	
-	public ArrayList<Object> updateEventSetData(int userId) {
-		ArrayList<Object> listOfObjects = new ArrayList<Object>();
-		int count = eventsetrepo.getEventSetCount();
-		eventsetrepo.updateVersion(count);
-		deletionWhileUpdatingEventSetData(userId, count, "Created");
-		deletionWhileUpdatingEventSetData(userId, count, "Published");
-		AllEventSetDto alleventsetdto = new AllEventSetDto();
-		alleventsetdto.setEventSetId(count);
-		AllEventSet alleventset = eventsetrepo.getEventSet(count);
-		
-		AllEvent currentLastEvent = eventrepo.getLatestEvent(count);
+	public AllEventSet updateEventSetData(int userId, int eventSetId) {
+		eventsetrepo.updateVersion(eventSetId);
+		deletionWhileUpdatingEventSetData(userId, eventSetId, "Created");
+		deletionWhileUpdatingEventSetData(userId, eventSetId, "Published");
+		AllEventSet alleventset = eventsetrepo.getEventSet(eventSetId);
+		AllEvent currentLastEvent = eventrepo.getLatestEvent(eventSetId);
 		this.eventNameSuffix = Integer.parseInt(currentLastEvent.getEventName().substring(alleventset.getName().length()));
-		
-		listOfObjects.add(alleventsetdto);
-		listOfObjects.add(alleventset);
-		
-		return listOfObjects;
+		return alleventset;
 	}
 	
 	public void deletionWhileUpdatingEventSetData(int userId, int eventSetId, String statusName) {

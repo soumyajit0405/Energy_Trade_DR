@@ -35,7 +35,7 @@ public interface EventRepository extends JpaRepository<AllEvent, Long>
 	@Query("Select COALESCE(max(eventId),0) from AllEvent a ") 
 	  int getEventCount();
 	
-	@Query("Select a from AllEvent where a.eventId = COALESCE(max(select eventId from AllEvent where allEventSet.eventSetId=?1),0)") 
+	@Query("Select a from AllEvent a where a.eventId = COALESCE(max(select eventId from AllEvent where allEventSet.eventSetId=?1),0)") 
 	AllEvent getLatestEvent(int eventSetId);
 	
 	@Query("Select a from EventStatusPl a where  a.name=?1") 
