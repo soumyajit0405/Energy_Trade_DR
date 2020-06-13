@@ -29,7 +29,7 @@ public class DRController extends AbstractBaseController
     private DRService drservice;
     
 	@RequestMapping(value=REST+"uploadEventSet/{location}/{userId}/{uploadDate}",method = RequestMethod.POST,headers="Accept=application/json")
-    public HashMap<String,Object>  uploadEventSet(@RequestBody HashMap<String,String> inputDetails, @PathVariable("location") String location, @PathVariable("userId") int userId,@PathVariable("uploadDate") String uploadDate)
+    public HashMap<String,Object> uploadEventSet(@RequestBody HashMap<String,String> inputDetails, @PathVariable("location") String location, @PathVariable("userId") int userId,@PathVariable("uploadDate") String uploadDate)
     {
 		HashMap<String,Object> response = new HashMap<String, Object>();
         try
@@ -41,6 +41,29 @@ public class DRController extends AbstractBaseController
             String directory="/home/"+"sample.xlsx";
             //String directory="C:\\Soumyajit\\ET-files-20200417T033846Z-001\\ET-files\\EnergyTrade-DR\\"+"sample.xlsx";
             response =  drservice.createEventSet(directory, imageByte,location, userId, uploadDate);
+            
+        }
+        catch(Exception e)
+        {
+        	e.printStackTrace();
+            //return "error = "+e;
+        }
+        return response;
+    }
+	
+	@RequestMapping(value=REST+"reuploadEventSet/{location}/{userId}/{uploadDate}",method = RequestMethod.POST,headers="Accept=application/json")
+    public HashMap<String,Object> reuploadEventSet(@RequestBody HashMap<String,String> inputDetails, @PathVariable("location") String location, @PathVariable("userId") int userId,@PathVariable("uploadDate") String uploadDate)
+    {
+		HashMap<String,Object> response = new HashMap<String, Object>();
+        try
+        {
+        	String imageDataArr=inputDetails.get("eventSet");
+            //This will decode the String which is encoded by using Base64 class
+            byte[] imageByte=Base64.decodeBase64(imageDataArr);
+            
+            String directory="/home/"+"sample.xlsx";
+            //String directory="C:\\Soumyajit\\ET-files-20200417T033846Z-001\\ET-files\\EnergyTrade-DR\\"+"sample.xlsx";
+            response =  drservice.updateEventSet(directory, imageByte,location, userId, uploadDate);
             
         }
         catch(Exception e)

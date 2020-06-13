@@ -17,6 +17,7 @@ import javax.persistence.TemporalType;
 @Table(name="event_set_version_history")
 @NamedQuery(name="EventSetVersionHistory.findAll", query="SELECT a FROM EventSetVersionHistory a")
 public class EventSetVersionHistory implements Serializable {
+	private static final long serialVersionUID = 1L;
 	
 	@Id
 	@Column(name="id")

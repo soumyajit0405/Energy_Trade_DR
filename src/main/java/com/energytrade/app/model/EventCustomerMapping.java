@@ -108,7 +108,6 @@ public class EventCustomerMapping implements Serializable {
 		this.isFineApplicable = isFineApplicable;
 	}
 
-
 	@Column(name="event_customer_status_id")
 	private int eventCustomerStatusId;
 
@@ -273,9 +272,4 @@ public class EventCustomerMapping implements Serializable {
 	public void setEventCustomerDevices(List<EventCustomerDevices> eventCustomerDevices) {
 		this.eventCustomerDevices = eventCustomerDevices;
 	}
-
-	
-	
-	
-
 }
