@@ -35,6 +35,9 @@ public interface EventRepository extends JpaRepository<AllEvent, Long>
 	@Query("Select COALESCE(max(eventId),0) from AllEvent a ") 
 	  int getEventCount();
 	
+	@Query("Select a from AllEvent a where a.eventId = COALESCE(max(select eventId from AllEvent where allEventSet.eventSetId=?1),0)") 
+	AllEvent getLatestEvent(int eventSetId);
+	
 	@Query("Select a from EventStatusPl a where  a.name=?1") 
 	  EventStatusPl getEventStatus(String eventStatusName);
 	
@@ -44,6 +47,9 @@ public interface EventRepository extends JpaRepository<AllEvent, Long>
 	
 	 @Query("Select COUNT(a.eventId) from AllEvent a where a.allEventSet.eventSetId=(select allEventSet.eventSetId from AllEvent where eventId=?1) and a.eventStatusPl.eventStatusId=1") 
 	  int getEventByStatusId(int eventId);
+	 
+	 @Query("Select a from AllEvent a where a.allEventSet.eventSetId=?1 and a.eventStatusPl.eventStatusId=?2") 
+	  List<AllEvent> getEventByStatusId(int eventSetId, int eventStatusId);
 	 
 	 @Query("Select a from AllEvent a where  a.eventId=?1") 
 	  AllEvent getEventById(int eventId);
@@ -67,4 +73,11 @@ public interface EventRepository extends JpaRepository<AllEvent, Long>
 	 @Modifying
 	    @Query("update AllEvent a set a.commitedPower=a.commitedPower-?1 where a.eventId=?2")
 	     void removeEventPower(double power, int eventId);
+	 
+			/*
+			 * @Modifying
+			 * 
+			 * @Query("delete from AllEvent a where a.allEventSet.eventSetId=?1 and a.eventStatusPl.eventStatusId=?2"
+			 * ) void deleteByStatusId(int eventSetId, int eventStatusId);
+			 */
 }
