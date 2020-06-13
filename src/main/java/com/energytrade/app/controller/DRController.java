@@ -150,4 +150,11 @@ public class DRController extends AbstractBaseController
     	return response;
     }
     
+    @RequestMapping(value =REST+"getDsoDetails/{dsoId}" , method =  RequestMethod.GET , headers =  "Accept=application/json" )
+    public HashMap<String,Object> getDsoDetails(@PathVariable("dsoId") int dsoId) throws ParseException {
+    	HashMap<String,Object> response=new HashMap<String, Object>();
+    	response.put("response", drservice.getDsoDetails(dsoId));
+    	return response;
+    }
+    
 }

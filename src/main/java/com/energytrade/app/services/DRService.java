@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.energytrade.app.dao.DRDao;
+import com.energytrade.app.dto.AllDsoDto;
 
 
 @Service("DRService")
@@ -66,5 +67,9 @@ public class DRService extends AbstractBaseService
     
     public HashMap<String, Object> getEventSetsByUser(int userId) throws ParseException {
     	return drdao.getEventSetsByUser(userId);
+    }
+    
+    public AllDsoDto getDsoDetails(int dsoId) {
+    	return drdao.getDsoDetails(dsoId);
     }
 }

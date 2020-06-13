@@ -51,7 +51,7 @@ public interface EventRepository extends JpaRepository<AllEvent, Long>
 	 @Query("Select a from AllEventSet a where  a.date >=?1 and a.date <=?2") 
 	  List<AllEventSet> getEventSetBydate(Date startDate, Date endDate);
 	 
-	 @Query("Select a from AllEventSet a where  a.date >=?1 and a.date <=?2 and a.allUser.userId=?3") 
+	 @Query("Select a from AllEventSet a where  a.date >=?1 and a.date <?2 and a.allUser.userId=?3") 
 	  List<AllEventSet> getEventSetBydate(Date startDate, Date endDate, int userId);
 	 
 	 @Query("Select a from AllEventSet a where  a.date >=?1") 

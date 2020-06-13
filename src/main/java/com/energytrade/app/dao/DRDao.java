@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.energytrade.app.dto.AllDsoDto;
 import com.energytrade.app.dto.AllEventDto;
 import com.energytrade.app.dto.AllEventSetDto;
 import com.energytrade.app.dto.EventCustomerDto;
@@ -157,6 +158,7 @@ public class DRDao extends AbstractBaseDao {
 			alleventset.setEventSetStatusPl(eventsetstatuspl);
 			alleventset.setUploadTime(ts);
 			alleventset.setDate(formatDate);
+			alleventset.setActiveVersion(1);
 			alleventsetdto.setEventSetName(dateArr[0]+dateArr[1]+dateArr[2]+location );
 			alleventsetdto.setUserId(alluser.getUserId());
 			alleventsetdto.setUserName(alluser.getFullName());
@@ -411,27 +413,30 @@ public class DRDao extends AbstractBaseDao {
 					evdto.setStatus(allevent.getEventCustomerMappings().get(j).getEventCustomerStatusId());
 					evdto.setIsSelected("Y");
 					// eventCustomerDto.setActualPower(allevent.getActualPower());
-					if (allevent.getEventCustomerMappings().get(j).getEventCustomerStatusId() == 3 || allevent.getEventCustomerMappings().get(j).getEventCustomerStatusId() == 5 || allevent.getEventCustomerMappings().get(j).getEventCustomerStatusId() == 8 || allevent.getEventCustomerMappings().get(j).getEventCustomerStatusId() == 10) {
-						evdto.setParticipationStatus("1");	
-						participationCount++;
-					}
 					
-					else if (allevent.getEventCustomerMappings().get(j).getEventCustomerStatusId() == 4) {
-							
-						counterBid++;
-						
-					}
-					
-					else if (allevent.getEventCustomerMappings().get(j).getEventCustomerStatusId() != 1 && allevent.getEventCustomerMappings().get(j).getEventCustomerStatusId() !=9) {
+					 if (allevent.getEventCustomerMappings().get(j).getEventCustomerStatusId() != 1 && allevent.getEventCustomerMappings().get(j).getEventCustomerStatusId() !=9) {
 						
 						notifiedCount++;
 						noResponseCount++;
 					} 
-					
-					else if (allevent.getEventCustomerMappings().get(j).getEventCustomerStatusId() == 1) {
+					if (allevent.getEventCustomerMappings().get(j).getEventCustomerStatusId() == 3 || allevent.getEventCustomerMappings().get(j).getEventCustomerStatusId() == 5 || allevent.getEventCustomerMappings().get(j).getEventCustomerStatusId() == 8 || allevent.getEventCustomerMappings().get(j).getEventCustomerStatusId() == 10) {
+						evdto.setParticipationStatus("1");	
+						participationCount++;
+						noResponseCount--;
+					}
+
+					 if (allevent.getEventCustomerMappings().get(j).getEventCustomerStatusId() == 4) {
 						
-						noResponseCount++;
-					} 
+						counterBid++;
+						noResponseCount--;
+					}
+					
+					
+					
+//					else if (allevent.getEventCustomerMappings().get(j).getEventCustomerStatusId() == 1) {
+//						
+//						noResponseCount++;
+//					}
 					
 					if (allevent.getEventCustomerMappings().get(j).getIsFineApplicable() != null) {
 						evdto.setIsFineApplicable(allevent.getEventCustomerMappings().get(j).getIsFineApplicable());
@@ -574,6 +579,7 @@ public class DRDao extends AbstractBaseDao {
 					if(eventcustomerdto.getParticipationStatus() == null) {
 						eventcustomerdto.setParticipationStatus("0");
 					}
+					
 					listOfCustomersdto.add(eventcustomerdto);
 
 				}
@@ -1084,4 +1090,67 @@ public HashMap<String, Object> loginDSOUser(String email, String password) throw
 		return response;
 	}
 
+	public AllDsoDto getDsoDetails(int dsoId) {
+		AllDsoDto alldsodto = new AllDsoDto();
+		try {
+			AllDso dso=alldsoRepo.getDsoDetails(dsoId);
+				if(dso != null) {
+				
+				if (dso.getCity() !=null) {
+					alldsodto.setCity(dso.getCity());	
+				} 
+				if (dso.getCompanyAddress() != null) {
+					alldsodto.setCompanyAddress(dso.getCompanyAddress());
+				}
+				if (dso.getContractNumber() != null) {
+					alldsodto.setContractNumber(dso.getContractNumber());
+				} 
+				if (dso.getDsoLogo() != null) {
+					alldsodto.setDsoLogo(dso.getDsoLogo());
+				}
+				if (dso.getDsoName() != null) {
+					alldsodto.setDsoName(dso.getDsoName());
+				}
+				if (dso.getDsoProfilePicture() != null) {
+					alldsodto.setDsoName(dso.getDsoName());
+				}
+				if (dso.getDsoProfilePicture() != null) {
+					alldsodto.setDsoProfilePicture(dso.getDsoProfilePicture());
+				}
+				if (dso.getEmailId() != null) {
+					alldsodto.setEmailId(dso.getEmailId());
+				}
+				if (dso.getPincode() != null) {
+					alldsodto.setPincode(dso.getPincode());
+				}
+				if (dso.getPrimaryContactEmail() != null) {
+					alldsodto.setPrimaryContactEmail(dso.getPrimaryContactEmail());
+				}
+				if (dso.getPrimaryContactName() != null) {
+					alldsodto.setPrimaryContactName(dso.getPrimaryContactName());
+				}
+				if (dso.getPrimaryContactPhone() != null) {
+					alldsodto.setPrimaryContactPhone(dso.getPrimaryContactPhone());
+				}
+				if (dso.getRegion() != null) {
+					alldsodto.setRegion(dso.getRegion());
+				}
+				if (dso.getSecondaryContactEmail() != null) {
+					alldsodto.setSecondaryContactEmail(dso.getSecondaryContactEmail());
+				}
+				if (dso.getSecondaryContactName() != null) {
+					alldsodto.setSecondaryContactName(dso.getSecondaryContactName());
+				}
+				if (dso.getSecondaryContactPhone() != null) {
+					alldsodto.setSecondaryContactPhone(dso.getSecondaryContactPhone());
+				}
+				if (dso.getState() != null) {
+					alldsodto.setState(dso.getState());
+				}
+			}
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		return alldsodto;
+	}
 }

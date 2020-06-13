@@ -47,7 +47,7 @@ public class AllEvent implements Serializable {
 	@Column(name="dso_net_meter_reading_e")
 	private double dsoNetMeterReadinge;
 	
-
+	
 	public double getDsoNetMeterReadings() {
 		return dsoNetMeterReadings;
 	}
