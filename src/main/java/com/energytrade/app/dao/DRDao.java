@@ -4,13 +4,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.math.BigDecimal;
+//import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.temporal.TemporalAmount;
+//import java.time.LocalDate;
+//import java.time.temporal.TemporalAmount;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -26,34 +26,37 @@ import com.energytrade.app.dto.AllDsoDto;
 import com.energytrade.app.dto.AllEventDto;
 import com.energytrade.app.dto.AllEventSetDto;
 import com.energytrade.app.dto.EventCustomerDto;
-import com.energytrade.app.model.AllContract;
+//import com.energytrade.app.model.AllContract;
 import com.energytrade.app.model.AllDso;
 import com.energytrade.app.model.AllEvent;
 import com.energytrade.app.model.AllEventSet;
-import com.energytrade.app.model.AllForecast;
-import com.energytrade.app.model.AllOtp;
-import com.energytrade.app.model.AllSellOrder;
-import com.energytrade.app.model.AllTimeslot;
+//import com.energytrade.app.model.AllForecast;
+//import com.energytrade.app.model.AllOtp;
+//import com.energytrade.app.model.AllSellOrder;
+//import com.energytrade.app.model.AllTimeslot;
 import com.energytrade.app.model.AllUser;
-import com.energytrade.app.model.ContractStatusPl;
-import com.energytrade.app.model.DevicePl;
+//import com.energytrade.app.model.EventCustomerDevices;
+//import com.energytrade.app.model.ContractStatusPl;
+//import com.energytrade.app.model.DevicePl;
 import com.energytrade.app.model.EventCustomerMapping;
-import com.energytrade.app.model.EventCustomerStatusPl;
+//import com.energytrade.app.model.EventCustomerStatusPl;
 import com.energytrade.app.model.EventSetStatusPl;
+import com.energytrade.app.model.EventSetVersionHistory;
 import com.energytrade.app.model.EventStatusPl;
-import com.energytrade.app.model.NonTradehourStatusPl;
-import com.energytrade.app.model.NotificationRequestDto;
-import com.energytrade.app.model.OrderStatusPl;
+//import com.energytrade.app.model.NonTradehourStatusPl;
+//import com.energytrade.app.model.NotificationRequestDto;
+//import com.energytrade.app.model.OrderStatusPl;
 import com.energytrade.app.model.UserAccessLevelMapping;
-import com.energytrade.app.model.UserDevice;
-import com.energytrade.app.model.UserRolesPl;
-import com.energytrade.app.util.ApplicationConstant;
+//import com.energytrade.app.model.UserDevice;
+//import com.energytrade.app.model.UserRolesPl;
+//import com.energytrade.app.util.ApplicationConstant;
 import com.energytrade.app.util.CommonUtility;
 import com.energytrade.app.util.CompareHelper;
 import com.energytrade.app.util.CustomMessages;
-import com.energytrade.app.util.PushHelper;
-import com.energytrade.app.util.ValidationUtil;
+//import com.energytrade.app.util.PushHelper;
+//import com.energytrade.app.util.ValidationUtil;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -76,6 +79,14 @@ public class DRDao extends AbstractBaseDao {
 
 	@Autowired
 	EventCustomerRepository eventcustomerrepo;
+	
+	@Autowired
+	EventSetVersionHistoryRepository eventsetVersionHistRepo;
+	
+	@Autowired
+	EventCustomerDevicesRepository eventcustomerdevicerepo;
+	
+	private int eventNameSuffix = 0;
 
 	public HashMap<String, Object> createEventSet(String filePath, byte[] imageByte, String location, int userId, String date) {
 
@@ -103,9 +114,8 @@ public class DRDao extends AbstractBaseDao {
 			}
 			
 			ArrayList<Object> eventSetObjects = createEventSetData(location, userId, date);
+			createOrUpdateEventSetVersionHistoryData(imageByte, formatDate, (AllEventSet) eventSetObjects.get(1));	// This method is saving file as Base64 string in Database
 			AllEventSetDto allEventSets = (AllEventSetDto) eventSetObjects.get(0);
-			// allEventSets.set
-			// internalresponse.put("eventSet", eventSetObjects.get(0));
 			List<AllEventDto> listOfEvents = createFile(filePath, imageByte, eventSetObjects.get(1));
 			allEventSets.setAllEvents(listOfEvents);
 			ArrayList<String> powerAndPrice = getPower(listOfEvents);
@@ -137,6 +147,117 @@ public class DRDao extends AbstractBaseDao {
 
 		}
 		return response;
+	}
+	
+	public HashMap<String, Object> updateEventSet(String filePath, byte[] imageByte, int eventSetId) {
+
+		HashMap<String, Object> response = new HashMap<String, Object>();
+		HashMap<String, Object> internalresponse = new HashMap<String, Object>();
+		try {
+			AllEventSet eventSet = eventsetrepo.getEventSet(eventSetId);
+			AllUser alluser = eventSet.getAllUser();
+			Date today = new Date();
+			DateFormat targetFormat = new SimpleDateFormat("yyyy-MM-dd");
+			Date formatDate = eventSet.getDate();
+			String todates= targetFormat.format(today);
+			Date toDate = targetFormat.parse(todates);
+			if (toDate.compareTo(formatDate) > 0) {
+				response.put("responseStatus", "1");
+				response.put("responseMessage", "Uploaded Date is before Current Date");
+				response.put("response", internalresponse);
+				response.put("customMessage", null);
+				return response;
+			}
+			if (eventsetrepo.getEventSetCountPerDay(formatDate, alluser.getUserId()) == 0) {
+				response.put("responseStatus", "1");
+				response.put("responseMessage", "No event set for this location and date");
+				response.put("response", internalresponse);
+				response.put("customMessage", null);
+				return response;
+			}
+			
+			int userId = alluser.getUserId();
+			eventSet = updateEventSetData(userId, eventSetId);
+			createOrUpdateEventSetVersionHistoryData(imageByte, formatDate, eventSet);	// This method is saving file as Base64 string in Database
+			AllEventSetDto allEventSets = new AllEventSetDto();
+			allEventSets.setEventSetId(eventSetId);
+			allEventSets.setEventSetName(eventSet.getName());
+			allEventSets.setUserId(userId);
+			allEventSets.setUserName(alluser.getFullName());
+			allEventSets.setEventSetStatus("Created");
+			allEventSets.setDateOfOccurence(eventSet.getUploadTime().toString());
+			List<AllEventDto> listOfEvents = createFile(filePath, imageByte, eventSet);
+			
+			allEventSets.setAllEvents(listOfEvents);
+			ArrayList<String> powerAndPrice = getPower(listOfEvents);
+			allEventSets.setPlannedPower(powerAndPrice.get(0));
+			allEventSets.setTotalPrice(powerAndPrice.get(1));
+			allEventSets.setActualPower("0");
+			allEventSets.setCancelledEvents("0");
+			allEventSets.setCompletedEvents("0");
+			allEventSets.setPublishedEvents("0");
+			eventsetrepo.updateEventSet(Double.parseDouble(powerAndPrice.get(0)),
+					Double.parseDouble(powerAndPrice.get(1)), allEventSets.getEventSetId());
+			internalresponse.put("eventSet", allEventSets);
+
+			response.put("responseStatus", "1");
+			response.put("responseMessage", "The request was successfully served.");
+			response.put("response", internalresponse);
+			response.put("customMessage", null);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			response.put("responseStatus", "2");
+			response.put("responseMessage", "Internal Server Error.");
+			response.put("customMessage", null);
+			response.put("response", null);
+		} finally {
+
+		}
+		return response;
+	}
+	
+	public EventSetVersionHistory createOrUpdateEventSetVersionHistoryData(byte[] imageByte, Date uploadDate, AllEventSet eventSet) {
+		EventSetVersionHistory eventSetVerHist = new EventSetVersionHistory();
+		Timestamp ts = new Timestamp(uploadDate.getTime());
+		int eventSetId = eventSet.getEventSetId();
+		int version = eventsetVersionHistRepo.getLatestEventSetVersion(eventSetId) + 1;
+		String uploadedFile = Base64.encodeBase64String(imageByte);
+		eventSetVerHist.setAllEventSet(eventSet);
+		eventSetVerHist.setVersion(version);
+		eventSetVerHist.setUploadedFile(uploadedFile);
+		eventSetVerHist.setCreatedTs(ts);
+		
+		eventsetVersionHistRepo.saveAndFlush(eventSetVerHist);
+		return eventSetVerHist;
+	}
+	
+	public AllEventSet updateEventSetData(int userId, int eventSetId) {
+		deletionWhileUpdatingEventSetData(userId, eventSetId, "Created");
+		deletionWhileUpdatingEventSetData(userId, eventSetId, "Published");
+		eventsetrepo.updateVersion(eventSetId);
+		AllEventSet alleventset = eventsetrepo.getEventSet(eventSetId);
+		if(eventrepo.getLatestEvent(eventSetId).size()>0) {
+			AllEvent currentLastEvent = eventrepo.getLatestEvent(eventSetId).get(0);
+			this.eventNameSuffix = Integer.parseInt(currentLastEvent.getEventName().substring(alleventset.getName().length()));
+		}
+		return alleventset;
+	}
+	
+	public void deletionWhileUpdatingEventSetData(int userId, int eventSetId, String statusName) {
+		EventStatusPl eventStatusPl = null;
+		eventStatusPl = eventrepo.getEventStatus(statusName);
+		List<AllEvent> eventsToBeDeleted = eventrepo.getEventByStatusId(eventSetId, eventStatusPl.getEventStatusId());
+		Iterator<AllEvent> it = eventsToBeDeleted.iterator();
+		while(it.hasNext()) {
+			AllEvent event = it.next();
+			int eventId = event.getEventId();
+			
+			eventcustomerdevicerepo.deleteByEventId(eventId);
+			eventcustomerrepo.deleteByEventId(eventId);
+			eventrepo.deleteById(eventId);
+			System.out.println("Deleted Id: "+eventId);
+		}
 	}
 
 	public ArrayList<Object> createEventSetData(String location, int userId, String uploadDate) {
@@ -229,15 +350,19 @@ public class DRDao extends AbstractBaseDao {
 	public List<AllEventDto> createFile(String filePath, byte[] imageByte, Object eventSet) throws IOException {
 
 		FileInputStream file = null;
+		FileOutputStream fo = null;
 		List<AllEventDto> listOfEvents = new ArrayList<AllEventDto>();
+		//new File(filePath).mkdirs();
 		try {
-			new FileOutputStream(filePath).write(imageByte);
+			fo = new FileOutputStream(filePath);
+			fo.write(imageByte);
 			file = new FileInputStream(new File(filePath));
 			listOfEvents = createEventSetObjects(file, eventSet);
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 			file.close();
+			fo.close();
 		}
 		return listOfEvents;
 	}
@@ -247,9 +372,10 @@ public class DRDao extends AbstractBaseDao {
 		List<AllEventDto> listOfEventsDto = new ArrayList<AllEventDto>();
 		List<AllEvent> listOfEvents = new ArrayList<>();
 		 final long HOUR = 3600*1000; // in milli-seconds.
+		 XSSFWorkbook workbook = null;
 		Date now = new Date();
 		try {
-			XSSFWorkbook workbook = new XSSFWorkbook(file);
+			workbook = new XSSFWorkbook(file);
 			CommonUtility cm = new CommonUtility();
 			// Get first/desired sheet from the workbook
 			XSSFSheet sheet = workbook.getSheetAt(0);
@@ -291,12 +417,13 @@ public class DRDao extends AbstractBaseDao {
 					continue;
 				}
 				alleventsetdto.setEventId(rowCount);
-				if (count < 10) {
-					alleventsetdto.setEventName(alleventset.getName() +"0"+ count);
-					allevent.setEventName(alleventset.getName() +"0"+ count);
+				int eventNameSuffix = this.eventNameSuffix + count;
+				if (eventNameSuffix < 10) {
+					alleventsetdto.setEventName(alleventset.getName() +"0"+ eventNameSuffix);
+					allevent.setEventName(alleventset.getName() +"0"+ eventNameSuffix);
 				} else {
-					alleventsetdto.setEventName(alleventset.getName() + count);
-					allevent.setEventName(alleventset.getName() + count);
+					alleventsetdto.setEventName(alleventset.getName() + eventNameSuffix);
+					allevent.setEventName(alleventset.getName() + eventNameSuffix);
 				}
 				alleventsetdto.setEventSetId(alleventset.getEventSetId());
 				alleventsetdto.setEventStatus(eventstatuspl.getName());
@@ -352,6 +479,7 @@ public class DRDao extends AbstractBaseDao {
 			e.printStackTrace();
 		} finally {
 			file.close();
+			workbook.close();
 		}
 		return listOfEventsDto;
 	}

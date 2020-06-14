@@ -1,7 +1,8 @@
 package com.energytrade.app.model;
 
-
+import java.io.Serializable;
 import java.util.Date;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -14,75 +15,99 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
-/**
- * The persistent class for the event_customer_devices database table.
- * 
- */
 @Entity
-@Table(name = "event_customer_devices")
-@NamedQuery(name = "EventCustomerDevices.findAll", query = "SELECT a FROM EventCustomerDevices a")
-public class EventCustomerDevices {
+@Table(name="event_set_version_history")
+@NamedQuery(name="EventSetVersionHistory.findAll", query="SELECT a FROM EventSetVersionHistory a")
+public class EventSetVersionHistory implements Serializable {
 	private static final long serialVersionUID = 1L;
-
+	
 	@Id
+	@Column(name="id")
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "event_customer_devices_id")
-	private int eventCustomerDevicesId;
-
+	private int id;
 	
-	// bi-directional many-to-one association to EventCustomerMapping
 	@ManyToOne
-	@JoinColumn(name = "event_customer_mapping")
-	private EventCustomerMapping eventCustomerMapping;
+	@JoinColumn(name="event_set_id")
+	private AllEventSet allEventSet;
 	
-	// bi-directional many-to-one association to UserDrDevice
-	@ManyToOne
-	@JoinColumn(name = "user_dr_device")
-	private UserDRDevices userDrDevice;
-
-	@Column(name = "created_by")
+	@Column(name="version")
+	private int version;
+	
+	@Column(name="order_id")
+	private String orderId;
+	
+	@Column(name="uploaded_file")
+	private String uploadedFile;
+	
+	@Column(name="status")
+	private String status;
+	
+	@Column(name="created_by")
 	private String createdBy;
 	
-	@Column(name = "updated_by")
+	@Column(name="updated_by")
 	private String updatedBy;
-
+	
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name = "created_ts")
+	@Column(name="created_ts")
 	private Date createdTs;
-
+	
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name = "updated_ts")
+	@Column(name="updated_ts")
 	private Date updatedTs;
-
+	
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name = "sync_ts")
+	@Column(name="sync_ts")
 	private Date syncTs;
 	
 	private byte softdeleteflag;
 
-	public int getEventCustomerDevicesId() {
-		return eventCustomerDevicesId;
+	public int getId() {
+		return id;
 	}
 
-	public void setEventCustomerDevicesId(int eventCustomerDevicesId) {
-		this.eventCustomerDevicesId = eventCustomerDevicesId;
+	public void setId(int id) {
+		this.id = id;
 	}
 
-	public EventCustomerMapping getEventCustomerMapping() {
-		return eventCustomerMapping;
+	public AllEventSet getAllEventSet() {
+		return allEventSet;
 	}
 
-	public void setEventCustomerMapping(EventCustomerMapping eventCustomerMapping) {
-		this.eventCustomerMapping = eventCustomerMapping;
+	public void setAllEventSet(AllEventSet allEventSet) {
+		this.allEventSet = allEventSet;
 	}
-
 	
-	public UserDRDevices getUserDrDevice() {
-		return userDrDevice;
+	public int getVersion() {
+		return version;
 	}
 
-	public void setUserDrDevice(UserDRDevices userDrDevice) {
-		this.userDrDevice = userDrDevice;
+	public void setVersion(int version) {
+		this.version = version;
+	}
+
+	public String getOrderId() {
+		return orderId;
+	}
+
+	public void setOrderId(String orderId) {
+		this.orderId = orderId;
+	}
+
+	public String getUploadedFile() {
+		return uploadedFile;
+	}
+
+	public void setUploadedFile(String uploadedFile) {
+		this.uploadedFile = uploadedFile;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 	public String getCreatedBy() {
