@@ -132,8 +132,4 @@ public class EventCustomerDevices {
 	public void setSoftdeleteflag(byte softdeleteflag) {
 		this.softdeleteflag = softdeleteflag;
 	}
-	
-	
-	
-
 }

@@ -8,6 +8,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -24,8 +26,9 @@ public class EventSetVersionHistory implements Serializable {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 	
-	@Column(name="event_set_id")
-	private int eventSetId;
+	@ManyToOne
+	@JoinColumn(name="event_set_id")
+	private AllEventSet allEventSet;
 	
 	@Column(name="version")
 	private int version;
@@ -67,14 +70,14 @@ public class EventSetVersionHistory implements Serializable {
 		this.id = id;
 	}
 
-	public int getEventSetId() {
-		return eventSetId;
+	public AllEventSet getAllEventSet() {
+		return allEventSet;
 	}
 
-	public void setEventSetId(int eventSetId) {
-		this.eventSetId = eventSetId;
+	public void setAllEventSet(AllEventSet allEventSet) {
+		this.allEventSet = allEventSet;
 	}
-
+	
 	public int getVersion() {
 		return version;
 	}

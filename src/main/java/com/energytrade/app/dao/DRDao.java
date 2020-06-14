@@ -112,12 +112,9 @@ public class DRDao extends AbstractBaseDao {
 				return response;
 			}
 			
-			createOrUpdateEventSetVersionHistoryData(imageByte, formatDate);	// This method is saving file as Base64 string in Database
-			
 			ArrayList<Object> eventSetObjects = createEventSetData(location, userId, date);
+			createOrUpdateEventSetVersionHistoryData(imageByte, formatDate, (AllEventSet) eventSetObjects.get(1));	// This method is saving file as Base64 string in Database
 			AllEventSetDto allEventSets = (AllEventSetDto) eventSetObjects.get(0);
-			// allEventSets.set
-			// internalresponse.put("eventSet", eventSetObjects.get(0));
 			List<AllEventDto> listOfEvents = createFile(filePath, imageByte, eventSetObjects.get(1));
 			allEventSets.setAllEvents(listOfEvents);
 			ArrayList<String> powerAndPrice = getPower(listOfEvents);
@@ -178,9 +175,9 @@ public class DRDao extends AbstractBaseDao {
 				return response;
 			}
 			
-			createOrUpdateEventSetVersionHistoryData(imageByte, formatDate);	// This method is saving file as Base64 string in Database
 			int userId = alluser.getUserId();
 			eventSet = updateEventSetData(userId, eventSetId);
+			createOrUpdateEventSetVersionHistoryData(imageByte, formatDate, eventSet);	// This method is saving file as Base64 string in Database
 			AllEventSetDto allEventSets = new AllEventSetDto();
 			allEventSets.setEventSetId(eventSetId);
 			allEventSets.setEventSetName(eventSet.getName());
@@ -219,15 +216,13 @@ public class DRDao extends AbstractBaseDao {
 		return response;
 	}
 	
-	public EventSetVersionHistory createOrUpdateEventSetVersionHistoryData(byte[] imageByte, Date uploadDate) {
+	public EventSetVersionHistory createOrUpdateEventSetVersionHistoryData(byte[] imageByte, Date uploadDate, AllEventSet eventSet) {
 		EventSetVersionHistory eventSetVerHist = new EventSetVersionHistory();
 		Timestamp ts = new Timestamp(uploadDate.getTime());
-		int eventSetId = eventsetrepo.getEventSetCount();
+		int eventSetId = eventSet.getEventSetId();
 		int version = eventsetVersionHistRepo.getLatestEventSetVersion(eventSetId) + 1;
-		if(version == 1)
-			eventSetId = eventSetId + 1;
 		String uploadedFile = Base64.encodeBase64String(imageByte);
-		eventSetVerHist.setEventSetId(eventSetId);
+		eventSetVerHist.setAllEventSet(eventSet);
 		eventSetVerHist.setVersion(version);
 		eventSetVerHist.setUploadedFile(uploadedFile);
 		eventSetVerHist.setCreatedTs(ts);
@@ -237,12 +232,14 @@ public class DRDao extends AbstractBaseDao {
 	}
 	
 	public AllEventSet updateEventSetData(int userId, int eventSetId) {
-		eventsetrepo.updateVersion(eventSetId);
 		deletionWhileUpdatingEventSetData(userId, eventSetId, "Created");
 		deletionWhileUpdatingEventSetData(userId, eventSetId, "Published");
+		eventsetrepo.updateVersion(eventSetId);
 		AllEventSet alleventset = eventsetrepo.getEventSet(eventSetId);
-		AllEvent currentLastEvent = eventrepo.getLatestEvent(eventSetId);
-		this.eventNameSuffix = Integer.parseInt(currentLastEvent.getEventName().substring(alleventset.getName().length()));
+		if(eventrepo.getLatestEvent(eventSetId).size()>0) {
+			AllEvent currentLastEvent = eventrepo.getLatestEvent(eventSetId).get(0);
+			this.eventNameSuffix = Integer.parseInt(currentLastEvent.getEventName().substring(alleventset.getName().length()));
+		}
 		return alleventset;
 	}
 	
@@ -254,11 +251,11 @@ public class DRDao extends AbstractBaseDao {
 		while(it.hasNext()) {
 			AllEvent event = it.next();
 			int eventId = event.getEventId();
-			int customerMappingId = eventcustomerrepo.getEventCustomerById(eventId, userId).getEventCustomerMappingId();
-			int customerDeviceId = eventcustomerdevicerepo.getEventCustomerDeviceById(customerMappingId).getEventCustomerDevicesId();
-			eventrepo.deleteById((long) eventId);
-			eventcustomerrepo.deleteById((long) customerMappingId);
-			eventcustomerdevicerepo.deleteById((long) customerDeviceId);
+			
+			eventcustomerdevicerepo.deleteByEventId(eventId);
+			eventcustomerrepo.deleteByEventId(eventId);
+			eventrepo.deleteById(eventId);
+			System.out.println("Deleted Id: "+eventId);
 		}
 	}
 
@@ -353,6 +350,7 @@ public class DRDao extends AbstractBaseDao {
 		FileInputStream file = null;
 		FileOutputStream fo = null;
 		List<AllEventDto> listOfEvents = new ArrayList<AllEventDto>();
+		//new File(filePath).mkdirs();
 		try {
 			fo = new FileOutputStream(filePath);
 			fo.write(imageByte);

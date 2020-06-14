@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.List;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.energytrade.app.model.AllElectricityBoard;
 import com.energytrade.app.model.AllEventSet;
@@ -72,4 +73,9 @@ public interface EventCustomerRepository extends JpaRepository<EventCustomerMapp
 	  
 	  @Query("Select a from EventCustomerMapping a where  a.allUser.userId=?1") 
 	  List<EventCustomerMapping> getEventCustomerByUserId(int customerId);
+	  
+	  @Modifying
+	  @Transactional
+	  @Query("delete from EventCustomerMapping where allEvent.eventId in (?1)") 
+	  void deleteByEventId(int eventId);
 }
