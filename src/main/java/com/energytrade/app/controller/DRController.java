@@ -37,8 +37,9 @@ public class DRController extends AbstractBaseController
         	String imageDataArr=inputDetails.get("eventSet");
             //This will decode the String which is encoded by using Base64 class
             byte[] imageByte=Base64.decodeBase64(imageDataArr);
-            // String directory="/home/"+"sample.xlsx";
-            String directory="D:\\UpWork Projects\\temp\\"+"sample.xlsx";
+
+            //String directory="/home/"+"sample.xlsx";
+            String directory="C:\\Soumyajit\\ET-files-20200417T033846Z-001\\ET-files\\EnergyTrade-DR\\"+"sample.xlsx";
             response =  drservice.createEventSet(directory, imageByte, location, userId, uploadDate);
             
         }
@@ -59,8 +60,8 @@ public class DRController extends AbstractBaseController
             //This will decode the String which is encoded by using Base64 class
             byte[] imageByte=Base64.decodeBase64(imageDataArr);
             
-            // String directory="/home/"+"sample.xlsx";
-            String directory="D:\\UpWork Projects\\temp\\"+"sample.xlsx";
+            //String directory="/home/"+"sample.xlsx";
+            String directory="C:\\Soumyajit\\ET-files-20200417T033846Z-001\\ET-files\\EnergyTrade-DR\\"+"sample.xlsx";
             response =  drservice.updateEventSet(directory, imageByte, eventSetId);
             
         }
