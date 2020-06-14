@@ -1,0 +1,16 @@
+spring:
+  kafka:
+    consumer:
+      username: kafak_si
+      password: kafkasi
+      bootstrap-servers: 204.48.29.162:9092
+      group-id: group-id
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      username: kafak_si
+      password: kafkasi
+      bootstrap-servers: 204.48.29.162:9092
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
