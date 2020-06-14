@@ -68,6 +68,17 @@ public class AllEventSet implements Serializable {
 	private Date uploadTime;
 
 	private int version;
+	
+	@Column(name="active_version")
+	private int activeVersion;
+
+	public int getActiveVersion() {
+		return activeVersion;
+	}
+
+	public void setActiveVersion(int activeVersion) {
+		this.activeVersion = activeVersion;
+	}
 
 	//bi-directional many-to-one association to EventSetStatusPl
 	@ManyToOne
