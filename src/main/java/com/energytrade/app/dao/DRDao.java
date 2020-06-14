@@ -197,6 +197,8 @@ public class DRDao extends AbstractBaseDao {
 			allEventSets.setPublishedEvents("0");
 			eventsetrepo.updateEventSet(Double.parseDouble(powerAndPrice.get(0)),
 					Double.parseDouble(powerAndPrice.get(1)), allEventSets.getEventSetId());
+			eventsetrepo.updateVersion(eventSetId);
+			
 			internalresponse.put("eventSet", allEventSets);
 
 			response.put("responseStatus", "1");
@@ -234,7 +236,6 @@ public class DRDao extends AbstractBaseDao {
 	public AllEventSet updateEventSetData(int userId, int eventSetId) {
 		deletionWhileUpdatingEventSetData(userId, eventSetId, "Created");
 		deletionWhileUpdatingEventSetData(userId, eventSetId, "Published");
-		eventsetrepo.updateVersion(eventSetId);
 		AllEventSet alleventset = eventsetrepo.getEventSet(eventSetId);
 		if(eventrepo.getLatestEvent(eventSetId).size()>0) {
 			AllEvent currentLastEvent = eventrepo.getLatestEvent(eventSetId).get(0);
@@ -369,9 +370,11 @@ public class DRDao extends AbstractBaseDao {
 
 		List<AllEventDto> listOfEventsDto = new ArrayList<AllEventDto>();
 		List<AllEvent> listOfEvents = new ArrayList<>();
+		List<HashMap<String, Object>> listOfMap = new ArrayList<>(); 
 		 final long HOUR = 3600*1000; // in milli-seconds.
 		 XSSFWorkbook workbook = null;
 		Date now = new Date();
+		HashMap<String, Object> map = null;
 		try {
 			workbook = new XSSFWorkbook(file);
 			CommonUtility cm = new CommonUtility();
@@ -463,15 +466,29 @@ public class DRDao extends AbstractBaseDao {
 				allevent.setParticipatedCustomers(0);
 				alleventsetdto.setShortfall("0");
 				alleventsetdto.setIsFineApplicable("N");
-				eventrepo.saveAndFlush(allevent);
-				List<EventCustomerDto> listOfCustomers = createEventCustomer(allevent);
-				alleventsetdto.setListOfCustomers(listOfCustomers);
-				alleventsetdto.setNumberOfCustomers(Integer.toString(listOfCustomers.size()));
+				/*
+				 * eventrepo.saveAndFlush(allevent); List<EventCustomerDto> listOfCustomers =
+				 * createEventCustomer(allevent);
+				 * alleventsetdto.setListOfCustomers(listOfCustomers);
+				 * alleventsetdto.setNumberOfCustomers(Integer.toString(listOfCustomers.size()))
+				 * ;
+				 */
+				map = new HashMap<>();
+				map.put("AllEvent", allevent);
+				map.put("AllEventDto", alleventsetdto);
 				System.out.println("");
 				listOfEvents.add(allevent);
-				listOfEventsDto.add(alleventsetdto);
+				listOfMap.add(map);
+				// listOfEventsDto.add(alleventsetdto);
 			}
-//			eventrepo.saveAll(listOfEvents);
+			eventrepo.saveAll(listOfEvents);
+			for(HashMap<String, Object> e: listOfMap) {
+				AllEventDto alleventdto = (AllEventDto) e.get("AllEventDto");
+				List<EventCustomerDto> listOfCustomers = createEventCustomer((AllEvent) e.get("AllEvent"));
+				alleventdto.setListOfCustomers(listOfCustomers);
+				alleventdto.setNumberOfCustomers(Integer.toString(listOfCustomers.size()));
+				listOfEventsDto.add(alleventdto);
+			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
