@@ -72,6 +72,22 @@ public class DRController extends AbstractBaseController
 
     }
 	
+	@RequestMapping(value=REST+"getVersionHistory/{eventSetId}",method = RequestMethod.GET,headers="Accept=application/json")
+    public HashMap<String,Object> getVersionHistory(@PathVariable("eventSetId") int eventSetId)
+    {
+		HashMap<String,Object> response = new HashMap<String, Object>();
+        try
+        {
+            response =  drservice.getVersionHistory(eventSetId);
+            
+        }
+        catch(Exception e)
+        {
+        	e.printStackTrace();
+        }
+        return response;
+    }
+	
 	@RequestMapping(value=REST+"loginUser",method = RequestMethod.POST,headers="Accept=application/json")
     public HashMap<String,Object>  loginUser(@RequestBody HashMap<String,String> inputDetails)
     {

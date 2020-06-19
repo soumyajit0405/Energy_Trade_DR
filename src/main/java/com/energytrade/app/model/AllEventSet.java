@@ -67,19 +67,6 @@ public class AllEventSet implements Serializable {
 	@Column(name="upload_time")
 	private Date uploadTime;
 
-	@Column(name="active_version")
-	private int activeVersion;
-	
-
-	public int getActiveVersion() {
-		return activeVersion;
-	}
-
-	public void setActiveVersion(int activeVersion) {
-		this.activeVersion = activeVersion;
-	}
-
-	
 	private int version;
 	
 	@Column(name="active_version")

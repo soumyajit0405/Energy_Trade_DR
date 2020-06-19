@@ -45,6 +45,9 @@ public interface EventSetRepository extends JpaRepository<AllEventSet, Long>
 	  @Query("Select count(a.userId) from AllUser a where a.phoneNumber=?1  and a.password=?2") 
 	  int loginUser(String phoneNumber, String password);
 	  
+	  @Query("Select a.activeVersion from AllEventSet a where a.eventSetId=?1") 
+	  int getActiveVersion(int eventSetId);
+	  
 	  @Query("Select a from EventSetStatusPl a where a.statusName=?1 ") 
 	  EventSetStatusPl getEventSetStatus(String eventStatusName);
 	  

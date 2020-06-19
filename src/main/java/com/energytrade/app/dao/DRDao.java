@@ -1234,6 +1234,44 @@ public HashMap<String, Object> loginDSOUser(String email, String password) throw
 		}
 		return response;
 	}
+	
+	public HashMap<String, Object> getVersionHistory(int eventSetId) {
+		HashMap<String, Object> response = new HashMap<String, Object>();
+		HashMap<String, Object> internalresponse = new HashMap<String, Object>();
+		List<HashMap<String, String>> eventSetVersions = new ArrayList<>();
+		try {
+			int activeVersion = eventsetrepo.getActiveVersion(eventSetId);
+			List<EventSetVersionHistory> evetSetVersionObjs = eventsetVersionHistRepo.getByEventSeId(eventSetId);
+			Iterator<EventSetVersionHistory> it = evetSetVersionObjs.iterator();
+			HashMap<String, String> temp;
+			while(it.hasNext()) {
+				EventSetVersionHistory obj = it.next();
+				temp = new HashMap<>();
+				String currentVersionFlag = "false";
+				if(obj.getVersion() == activeVersion)
+					currentVersionFlag = "true";
+				temp.put("id", Integer.toString(obj.getId()));
+				temp.put("version", Integer.toString(obj.getVersion()));
+				temp.put("uploadTime", obj.getCreatedTs().toString());
+				temp.put("currentVersionFlag", currentVersionFlag);
+				eventSetVersions.add(temp);
+			}
+			internalresponse.put("eventSetVersions", eventSetVersions);
+			response.put("responseStatus", "1");
+			response.put("responseMessage", "The request was successfully served.");
+			response.put("eventSets", internalresponse);
+			response.put("customMessage", CustomMessages.getCustomMessages("SL"));
+		}
+		catch (Exception e) {
+			System.out.println("Error in checkExistence" + e.getMessage());
+			e.printStackTrace();
+			response.put("responseStatus", "2");
+			response.put("responseMessage", "Internal Server Error");
+			response.put("response", null);
+			response.put("customMessage", null);
+		}
+		return response;
+	}
 
 	public AllDsoDto getDsoDetails(int dsoId) {
 		AllDsoDto alldsodto = new AllDsoDto();
