@@ -15,4 +15,7 @@ public interface EventSetVersionHistoryRepository extends JpaRepository<EventSet
 	
 	@Query("Select a from EventSetVersionHistory a where a.allEventSet.eventSetId=?1") 
 	List<EventSetVersionHistory> getByEventSeId(int eventSetId);
+	
+	@Query("Select a from EventSetVersionHistory a where a.allEventSet.eventSetId=?1 and a.version=?2") 
+	EventSetVersionHistory getByEventSeIdAndVersion(int eventSetId, int version);
 }

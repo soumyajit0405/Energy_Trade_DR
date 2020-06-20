@@ -13,6 +13,11 @@ import java.util.HashMap;
 
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.core.io.Resource;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.energytrade.app.services.DRService;
@@ -86,6 +91,28 @@ public class DRController extends AbstractBaseController
         	e.printStackTrace();
         }
         return response;
+    }
+	
+	@RequestMapping(value=REST+"downloadVersion/{eventSetId}/{version}",method = RequestMethod.GET,headers="Accept=application/json")
+    public ResponseEntity<Resource> downloadVersion(@PathVariable("eventSetId") int eventSetId, @PathVariable("version") int version)
+    {
+		String fileName = null;
+		byte[] fileDecodedValue = null;
+		String mimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+		try
+        {	
+			HashMap<String, String> temp = drservice.downloadVersion(eventSetId, version);
+			fileName = temp.get("fileName");
+			fileDecodedValue = Base64.decodeBase64(temp.get("fileEncodedString"));            
+        }
+        catch(Exception e)
+        {
+        	e.printStackTrace();
+        }
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(mimeType))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
+                .body(new ByteArrayResource(fileDecodedValue));
     }
 	
 	@RequestMapping(value=REST+"loginUser",method = RequestMethod.POST,headers="Accept=application/json")

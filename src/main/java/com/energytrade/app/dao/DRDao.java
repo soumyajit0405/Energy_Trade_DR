@@ -1272,6 +1272,16 @@ public HashMap<String, Object> loginDSOUser(String email, String password) throw
 		}
 		return response;
 	}
+	
+	public HashMap<String, String> downloadVersion(int eventSetId, int version){
+		HashMap<String, String> fileData = new HashMap<>();
+		EventSetVersionHistory obj = eventsetVersionHistRepo.getByEventSeIdAndVersion(eventSetId, version);
+		String fileName = eventSetId + "-" + version + ".xlsx";
+		fileData.put("fileName", fileName);
+		fileData.put("fileEncodedString", obj.getUploadedFile());
+		
+		return fileData;
+	}
 
 	public AllDsoDto getDsoDetails(int dsoId) {
 		AllDsoDto alldsodto = new AllDsoDto();
