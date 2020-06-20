@@ -115,6 +115,27 @@ public class DRController extends AbstractBaseController
                 .body(new ByteArrayResource(fileDecodedValue));
     }
 	
+	@RequestMapping(value=REST+"restoreVersion",method = RequestMethod.POST,headers="Accept=application/json")
+    public HashMap<String,Object> restoreEventSet(@RequestBody HashMap<String,String> inputDetails)
+    {
+		HashMap<String,Object> response = new HashMap<String, Object>();
+        try
+        {
+        	int eventSetId=Integer.parseInt(inputDetails.get("eventSetId"));
+        	int version=Integer.parseInt(inputDetails.get("version"));
+            String directory="D:\\UpWork Projects\\temp\\sample.xlsx";
+            //String directory="C:\\Soumyajit\\ET-files-20200417T033846Z-001\\ET-files\\EnergyTrade-DR\\"+"sample.xlsx";
+            response =  drservice.restoreEventSet(directory, eventSetId, version);
+            
+        }
+        catch(Exception e)
+        {
+        	e.printStackTrace();
+        }
+        return response;
+
+    }
+	
 	@RequestMapping(value=REST+"loginUser",method = RequestMethod.POST,headers="Accept=application/json")
     public HashMap<String,Object>  loginUser(@RequestBody HashMap<String,String> inputDetails)
     {
