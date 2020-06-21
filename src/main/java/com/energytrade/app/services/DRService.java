@@ -24,6 +24,18 @@ public class DRService extends AbstractBaseService
     public HashMap<String,Object> updateEventSet(String filePath, byte [] imageByte, int eventSetId) {
         return this.drdao.updateEventSet(filePath, imageByte, eventSetId);
    }
+    
+    public HashMap<String,Object> getVersionHistory(int eventSetId) {
+        return this.drdao.getVersionHistory(eventSetId);
+   }
+    
+    public HashMap<String, String> downloadVersion(int eventSetId, int version){
+    	return this.drdao.downloadVersion(eventSetId, version);
+    }
+    
+    public HashMap<String,Object> restoreEventSet(String filePath, int eventSetId, int version) {
+        return this.drdao.restoreEventSet(filePath, eventSetId, version);
+   }
           
     public HashMap<String, Object> loginUser(String phoneNumber, String password) {
     	return drdao.loginUser(phoneNumber, password);

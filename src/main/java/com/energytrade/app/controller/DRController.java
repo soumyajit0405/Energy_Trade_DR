@@ -13,6 +13,11 @@ import java.util.HashMap;
 
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.core.io.Resource;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.energytrade.app.services.DRService;
@@ -62,6 +67,65 @@ public class DRController extends AbstractBaseController
             String directory="/home/"+"sample.xlsx";
             //String directory="C:\\Soumyajit\\ET-files-20200417T033846Z-001\\ET-files\\EnergyTrade-DR\\"+"sample.xlsx";
             response =  drservice.updateEventSet(directory, imageByte, eventSetId);
+            
+        }
+        catch(Exception e)
+        {
+        	e.printStackTrace();
+        }
+        return response;
+
+    }
+	
+	@RequestMapping(value=REST+"getVersionHistory/{eventSetId}",method = RequestMethod.GET,headers="Accept=application/json")
+    public HashMap<String,Object> getVersionHistory(@PathVariable("eventSetId") int eventSetId)
+    {
+		HashMap<String,Object> response = new HashMap<String, Object>();
+        try
+        {
+            response =  drservice.getVersionHistory(eventSetId);
+            
+        }
+        catch(Exception e)
+        {
+        	e.printStackTrace();
+        }
+        return response;
+    }
+	
+	@RequestMapping(value=REST+"downloadVersion/{eventSetId}/{version}",method = RequestMethod.GET,headers="Accept=application/json")
+    public ResponseEntity<Resource> downloadVersion(@PathVariable("eventSetId") int eventSetId, @PathVariable("version") int version)
+    {
+		String fileName = null;
+		byte[] fileDecodedValue = null;
+		String mimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+		try
+        {	
+			HashMap<String, String> temp = drservice.downloadVersion(eventSetId, version);
+			fileName = temp.get("fileName");
+			fileDecodedValue = Base64.decodeBase64(temp.get("fileEncodedString"));            
+        }
+        catch(Exception e)
+        {
+        	e.printStackTrace();
+        }
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(mimeType))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
+                .body(new ByteArrayResource(fileDecodedValue));
+    }
+	
+	@RequestMapping(value=REST+"restoreVersion",method = RequestMethod.POST,headers="Accept=application/json")
+    public HashMap<String,Object> restoreEventSet(@RequestBody HashMap<String,String> inputDetails)
+    {
+		HashMap<String,Object> response = new HashMap<String, Object>();
+        try
+        {
+        	int eventSetId=Integer.parseInt(inputDetails.get("eventSetId"));
+        	int version=Integer.parseInt(inputDetails.get("version"));
+            String directory="D:\\UpWork Projects\\temp\\sample.xlsx";
+            //String directory="C:\\Soumyajit\\ET-files-20200417T033846Z-001\\ET-files\\EnergyTrade-DR\\"+"sample.xlsx";
+            response =  drservice.restoreEventSet(directory, eventSetId, version);
             
         }
         catch(Exception e)

@@ -177,7 +177,7 @@ public class DRDao extends AbstractBaseDao {
 			}
 			
 			int userId = alluser.getUserId();
-			eventSet = updateEventSetData(userId, eventSetId);
+			eventSet = updateEventSetData(userId, eventSetId, false);
 			createOrUpdateEventSetVersionHistoryData(imageByte, formatDate, eventSet);	// This method is saving file as Base64 string in Database
 			AllEventSetDto allEventSets = new AllEventSetDto();
 			allEventSets.setEventSetId(eventSetId);
@@ -219,6 +219,71 @@ public class DRDao extends AbstractBaseDao {
 		return response;
 	}
 	
+	public HashMap<String, Object> restoreEventSet(String filePath, int eventSetId, int version) {
+
+		HashMap<String, Object> response = new HashMap<String, Object>();
+		HashMap<String, Object> internalresponse = new HashMap<String, Object>();
+		try {
+			EventSetVersionHistory eventSet = eventsetVersionHistRepo.getByEventSeIdAndVersion(eventSetId, version);
+			int eventSetCount = eventsetVersionHistRepo.getCountByEventSetId(eventSetId);
+			if (eventSetCount == 0) {
+				response.put("responseStatus", "1");
+				response.put("responseMessage", "Incorrect eventSet");
+				response.put("response", internalresponse);
+				response.put("customMessage", null);
+				return response;
+			}
+			if (eventSet == null) {
+				response.put("responseStatus", "1");
+				response.put("responseMessage", "Input version not available for eventSet");
+				response.put("response", internalresponse);
+				response.put("customMessage", null);
+				return response;
+			}
+			AllEventSet allEventSet = eventSet.getAllEventSet();
+			AllUser alluser = allEventSet.getAllUser();
+			int userId = alluser.getUserId();
+			allEventSet = updateEventSetData(userId, eventSetId, true);
+			AllEventSetDto allEventSets = new AllEventSetDto();
+			allEventSets.setEventSetId(eventSetId);
+			allEventSets.setEventSetName(allEventSet.getName());
+			allEventSets.setUserId(userId);
+			allEventSets.setUserName(alluser.getFullName());
+			allEventSets.setEventSetStatus("Created");
+			allEventSets.setDateOfOccurence(allEventSet.getUploadTime().toString());
+			List<AllEventDto> listOfEvents = createFile(filePath, Base64.decodeBase64(eventSet.getUploadedFile()), allEventSet);
+			
+			allEventSets.setAllEvents(listOfEvents);
+			ArrayList<String> powerAndPrice = getPower(listOfEvents);
+			allEventSets.setPlannedPower(powerAndPrice.get(0));
+			allEventSets.setTotalPrice(powerAndPrice.get(1));
+			allEventSets.setActualPower("0");
+			allEventSets.setCancelledEvents("0");
+			allEventSets.setCompletedEvents("0");
+			allEventSets.setPublishedEvents("0");
+			eventsetrepo.updateEventSet(Double.parseDouble(powerAndPrice.get(0)),
+					Double.parseDouble(powerAndPrice.get(1)), allEventSets.getEventSetId());
+			eventsetrepo.restoreVersion(eventSetId, version);
+			
+			internalresponse.put("eventSet", allEventSets);
+
+			response.put("responseStatus", "1");
+			response.put("responseMessage", "The request was successfully served.");
+			response.put("response", internalresponse);
+			response.put("customMessage", null);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			response.put("responseStatus", "2");
+			response.put("responseMessage", "Internal Server Error.");
+			response.put("customMessage", null);
+			response.put("response", null);
+		} finally {
+
+		}
+		return response;
+	}
+	
 	public EventSetVersionHistory createOrUpdateEventSetVersionHistoryData(byte[] imageByte, Date uploadDate, AllEventSet eventSet) {
 		EventSetVersionHistory eventSetVerHist = new EventSetVersionHistory();
 		Timestamp ts = new Timestamp(uploadDate.getTime());
@@ -234,7 +299,7 @@ public class DRDao extends AbstractBaseDao {
 		return eventSetVerHist;
 	}
 	
-	public AllEventSet updateEventSetData(int userId, int eventSetId) {
+	public AllEventSet updateEventSetData(int userId, int eventSetId, boolean restoreFlag) {
 		deletionWhileUpdatingEventSetData(userId, eventSetId, "Created");
 		deletionWhileUpdatingEventSetData(userId, eventSetId, "Published");
 		AllEventSet alleventset = eventsetrepo.getEventSet(eventSetId);
@@ -1242,6 +1307,54 @@ public HashMap<String, Object> loginDSOUser(String email, String password) throw
 
 		}
 		return response;
+	}
+	
+	public HashMap<String, Object> getVersionHistory(int eventSetId) {
+		HashMap<String, Object> response = new HashMap<String, Object>();
+		HashMap<String, Object> internalresponse = new HashMap<String, Object>();
+		List<HashMap<String, String>> eventSetVersions = new ArrayList<>();
+		try {
+			int activeVersion = eventsetrepo.getActiveVersion(eventSetId);
+			List<EventSetVersionHistory> evetSetVersionObjs = eventsetVersionHistRepo.getByEventSeId(eventSetId);
+			Iterator<EventSetVersionHistory> it = evetSetVersionObjs.iterator();
+			HashMap<String, String> temp;
+			while(it.hasNext()) {
+				EventSetVersionHistory obj = it.next();
+				temp = new HashMap<>();
+				String currentVersionFlag = "false";
+				if(obj.getVersion() == activeVersion)
+					currentVersionFlag = "true";
+				temp.put("id", Integer.toString(obj.getId()));
+				temp.put("version", Integer.toString(obj.getVersion()));
+				temp.put("uploadTime", obj.getCreatedTs().toString());
+				temp.put("currentVersionFlag", currentVersionFlag);
+				eventSetVersions.add(temp);
+			}
+			internalresponse.put("eventSetVersions", eventSetVersions);
+			response.put("responseStatus", "1");
+			response.put("responseMessage", "The request was successfully served.");
+			response.put("eventSets", internalresponse);
+			response.put("customMessage", CustomMessages.getCustomMessages("SL"));
+		}
+		catch (Exception e) {
+			System.out.println("Error in checkExistence" + e.getMessage());
+			e.printStackTrace();
+			response.put("responseStatus", "2");
+			response.put("responseMessage", "Internal Server Error");
+			response.put("response", null);
+			response.put("customMessage", null);
+		}
+		return response;
+	}
+	
+	public HashMap<String, String> downloadVersion(int eventSetId, int version){
+		HashMap<String, String> fileData = new HashMap<>();
+		EventSetVersionHistory obj = eventsetVersionHistRepo.getByEventSeIdAndVersion(eventSetId, version);
+		String fileName = eventSetId + "-" + version + ".xlsx";
+		fileData.put("fileName", fileName);
+		fileData.put("fileEncodedString", obj.getUploadedFile());
+		
+		return fileData;
 	}
 
 	public AllDsoDto getDsoDetails(int dsoId) {
