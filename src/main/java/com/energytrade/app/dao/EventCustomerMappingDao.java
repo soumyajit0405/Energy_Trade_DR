@@ -150,7 +150,9 @@ public class EventCustomerMappingDao extends AbstractBaseDao {
 		}
 
 		try {
-			eventCustomerMappingRepo.updateEventCommitments(userId, eventId, updatedCommitedPower,
+			EventCustomerMapping evtmp = eventCustomerMappingRepo.getEventCustomerMapping(eventId, userId);
+			double resultantPower = updatedCommitedPower - evtmp.getCommitedPower();
+			eventCustomerMappingRepo.updateEventCommitments(userId, eventId, resultantPower,
 					updatedCounterBidAmount);
 			eventRepository.addEventPower(updatedCommitedPower, eventId);
 			ArrayList<EventCustomerDevices> eventCustomerDevicesList = new ArrayList<EventCustomerDevices>();

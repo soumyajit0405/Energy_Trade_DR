@@ -105,9 +105,9 @@ public class DRDao extends AbstractBaseDao {
 				response.put("customMessage", null);
 				return response;
 			}
-			if (eventsetrepo.getEventSetCountPerDay(formatDate, userId) > 0) {
+			if (eventsetrepo.getEventSetCountPerDay(formatDate, userId, location) > 0) {
 				response.put("responseStatus", "1");
-				response.put("responseMessage", "File already uploaded with same date and user");
+				response.put("responseMessage", "File already uploaded with same date, user and location");
 				response.put("response", internalresponse);
 				response.put("customMessage", null);
 				return response;
@@ -168,7 +168,7 @@ public class DRDao extends AbstractBaseDao {
 				response.put("customMessage", null);
 				return response;
 			}
-			if (eventsetrepo.getEventSetCountPerDay(formatDate, alluser.getUserId()) == 0) {
+			if (eventsetrepo.getEventSetCountPerDay(formatDate, alluser.getUserId(),eventSet.getDivison()) == 0) {
 				response.put("responseStatus", "1");
 				response.put("responseMessage", "No event set for this location and date");
 				response.put("response", internalresponse);
@@ -280,6 +280,7 @@ public class DRDao extends AbstractBaseDao {
 			alleventset.setEventSetStatusPl(eventsetstatuspl);
 			alleventset.setUploadTime(ts);
 			alleventset.setDate(formatDate);
+			alleventset.setDivison(location);
 			alleventset.setActiveVersion(1);
 			alleventsetdto.setEventSetName(dateArr[0]+dateArr[1]+dateArr[2]+location );
 			alleventsetdto.setUserId(alluser.getUserId());
@@ -308,7 +309,7 @@ public class DRDao extends AbstractBaseDao {
 		try {
 			int count = eventcustomerrepo.getEventCustomerCount();
 			List<UserAccessLevelMapping> listOfusers = eventcustomerrepo
-					.getUserAccessLevel(event.getAllEventSet().getAllUser().getUserId());
+					.getUserAccessLevel(event.getAllEventSet().getAllUser().getUserId(),event.getAllEventSet().getDivison());
 			// EventCustomerStatusPl eventstatus =
 			// eventcustomerrepo.getEventCustomerStatus(1);
 			for (int j = 0; j < listOfusers.size(); j++) {
@@ -323,6 +324,7 @@ public class DRDao extends AbstractBaseDao {
 				eventCustomerMapping.setActualPower(0);
 				eventCustomerMapping.setCustomerNetMeterReadinge(0);
 				eventCustomerMapping.setCustomerNetMeterReadings(0);
+				eventCustomerMapping.setEarnings(0);
 				eventCustomerMapping.setCounterBidFlag("N");
 				eventCustomerMapping.setBidPrice(event.getExpectedPrice());
 				eventCustomerDto.setUserId(listOfusers.get(j).getAllUser().getUserId());
@@ -417,6 +419,9 @@ public class DRDao extends AbstractBaseDao {
 
 				listOfDates = CommonUtility.getDateFormatted(cell2.getStringCellValue(),alleventset.getDate() );
 				if(listOfDates.get(0).compareTo(afterHour) < 0) {
+					continue;
+				} 
+				if (cell3 == null || cell3.getNumericCellValue() <=0 || cell4 == null || cell4.getNumericCellValue() <=0) {
 					continue;
 				}
 				alleventsetdto.setEventId(rowCount);
@@ -865,6 +870,7 @@ public HashMap<String, Object> loginDSOUser(String email, String password) throw
 		try {
 
 			eventrepo.updateEvent(4, event);
+			eventcustomerrepo.updateEventCustomer(9, event);
 			// eventcustomerrepo.updateEventCustomer(2, events.get(i));
 
 			response.put("responseStatus", "1");
@@ -953,7 +959,7 @@ public HashMap<String, Object> loginDSOUser(String email, String password) throw
 			} else {
 				AllEvent allevent = eventrepo.getEventById(events.get(0));
 				List<UserAccessLevelMapping> listOfCustomers = eventcustomerrepo
-						.getUserAccessLevel(allevent.getAllEventSet().getAllUser().getUserId());
+						.getUserAccessLevel(allevent.getAllEventSet().getAllUser().getUserId(),allevent.getAllEventSet().getDivison());
 				List<EventCustomerMapping> listOfEventCustomers = eventcustomerrepo
 						.getEventCustomerMappings(events.get(0));
 				for (int j = 0; j < listOfCustomers.size(); j++) {
@@ -1149,6 +1155,7 @@ public HashMap<String, Object> loginDSOUser(String email, String password) throw
 					alleventsetdto.setUserId(listOfWeeklyEvents.get(i).getAllUser().getUserId());
 					alleventsetdto.setUserName(listOfWeeklyEvents.get(i).getAllUser().getFullName());
 					alleventsetdto.setActualPower(Double.toString(listOfWeeklyEvents.get(i).getActualPower()));
+					alleventsetdto.setCommittedPower(Double.toString(listOfWeeklyEvents.get(i).getCommitedPower()));
 					if (status.size() > 0) {
 						alleventsetdto.setPublishedEvents(status.get(0));
 						alleventsetdto.setCompletedEvents(status.get(1));
@@ -1163,7 +1170,7 @@ public HashMap<String, Object> loginDSOUser(String email, String password) throw
 				}
 
 				for (int i = 0; i < listOfMonthlyEvents.size(); i++) {
-					// status = ch.countdata(listOfMonthlyEvents.get(i).getAllEvents());
+					 status = CompareHelper.countdata(listOfMonthlyEvents.get(i).getAllEvents());
 					if (weeklyEvents.contains(listOfMonthlyEvents.get(i).getEventSetId())) {
 						continue;
 					}
@@ -1174,6 +1181,7 @@ public HashMap<String, Object> loginDSOUser(String email, String password) throw
 					alleventsetdto.setUserId(listOfMonthlyEvents.get(i).getAllUser().getUserId());
 					alleventsetdto.setUserName(listOfMonthlyEvents.get(i).getAllUser().getFullName());
 					alleventsetdto.setActualPower(Double.toString(listOfMonthlyEvents.get(i).getActualPower()));
+					alleventsetdto.setCommittedPower(Double.toString(listOfMonthlyEvents.get(i).getCommitedPower()));
 					if (status.size() > 0) {
 						alleventsetdto.setPublishedEvents(status.get(0));
 						alleventsetdto.setCompletedEvents(status.get(1));
@@ -1188,7 +1196,7 @@ public HashMap<String, Object> loginDSOUser(String email, String password) throw
 				}
 
 				for (int i = 0; i < listOfUpcomingEvents.size(); i++) {
-					// status = ch.countdata(listOfUpcomingEvents.get(i).getAllEvents());
+					 status = CompareHelper.countdata(listOfUpcomingEvents.get(i).getAllEvents());
 					if (weeklyEvents.contains(listOfUpcomingEvents.get(i).getEventSetId()) || monthlyEvents.contains(listOfUpcomingEvents.get(i).getEventSetId())) {
 						continue;
 					}
@@ -1199,6 +1207,7 @@ public HashMap<String, Object> loginDSOUser(String email, String password) throw
 					alleventsetdto.setUserId(listOfUpcomingEvents.get(i).getAllUser().getUserId());
 					alleventsetdto.setUserName(listOfUpcomingEvents.get(i).getAllUser().getFullName());
 					alleventsetdto.setActualPower(Double.toString(listOfUpcomingEvents.get(i).getActualPower()));
+					alleventsetdto.setCommittedPower(Double.toString(listOfUpcomingEvents.get(i).getCommitedPower()));
 					if (status.size() > 0) {
 						alleventsetdto.setPublishedEvents(status.get(0));
 						alleventsetdto.setCompletedEvents(status.get(1));

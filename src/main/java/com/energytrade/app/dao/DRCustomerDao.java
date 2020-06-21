@@ -421,6 +421,7 @@ public class DRCustomerDao {
 			AllUser alluser = alluserrepo.getUserById((int) (deviceDetails.get("userId")));
 			KiotUserMapping kiotUserMapping = kiotUserMappingRepo
 					.getKiotUserMappingByContract(alluser.getDrContractNumber());
+			if (kiotUserMapping !=null) {
 			List<AllKiotSwitch> kiotSwitches = allKiotSwithcesRepo
 					.getAllKiotSwitches(kiotUserMapping.getKiotUserMappingId());
 			List<HashMap<String, String>> listOfUserDevice = (ArrayList<HashMap<String, String>>) deviceDetails
@@ -455,6 +456,12 @@ public class DRCustomerDao {
 			response.put("message", CustomMessages.getCustomMessages("SUC"));
 			response.put("key", "200");
 
+			} else {
+				response.put("message", "No switches available. Cannot add device");
+				response.put("key", "200");
+				return response;
+			
+			}
 		} catch (Exception e) {
 			System.out.println("Error in checkExistence" + e.getMessage());
 			e.printStackTrace();

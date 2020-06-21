@@ -20,7 +20,7 @@ public interface EventCustomerMappingRepository extends JpaRepository<EventCusto
 	void counterbidInEvent(int userId, int eventId, double commitedPower, double counterBidAmount, String counterBidFlag);
 
 	@Modifying
-	@Query("update EventCustomerMapping e set e.eventCustomerStatusId=7 where e.allEvent.eventId=?2 and e.allUser.userId=?1")
+	@Query("update EventCustomerMapping e set e.eventCustomerStatusId=2 where e.allEvent.eventId=?2 and e.allUser.userId=?1")
 	void withdrawFromEvent(int userId, int eventId);
 
 	@Modifying

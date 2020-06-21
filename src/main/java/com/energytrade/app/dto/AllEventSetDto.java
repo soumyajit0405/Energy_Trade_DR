@@ -17,6 +17,15 @@ public class AllEventSetDto extends AbstractBaseDto {
 	private String plannedPower;
 	private String actualPower;
 	private String totalPrice;
+	private String committedPower;
+	public String getCommittedPower() {
+		return committedPower;
+	}
+
+	public void setCommittedPower(String committedPower) {
+		this.committedPower = committedPower;
+	}
+
 	public String getTotalPrice() {
 		return totalPrice;
 	}

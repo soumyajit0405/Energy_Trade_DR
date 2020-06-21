@@ -29,6 +29,18 @@ public class EventCustomerMapping implements Serializable {
 	@Column(name="customer_fine")
 	private double customerFine;
 	
+	@Column(name="earnings")
+	private double earnings;
+	
+	public double getEarnings() {
+		return earnings;
+	}
+
+	public void setEarnings(double earnings) {
+		this.earnings = earnings;
+	}
+
+
 	@Column(name="is_fine_applicable")
 	private String isFineApplicable;
 

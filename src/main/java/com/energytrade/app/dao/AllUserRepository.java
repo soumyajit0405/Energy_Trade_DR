@@ -12,6 +12,7 @@ import com.energytrade.app.model.AllUser;
 import com.energytrade.app.model.DRContracts;
 import com.energytrade.app.model.LocalityPl;
 import com.energytrade.app.model.StateBoardMapping;
+import com.energytrade.app.model.UserAccessTypeMapping;
 import com.energytrade.app.model.UserRolesPl;
 import com.energytrade.app.model.UserTypePl;
 
@@ -30,7 +31,7 @@ public interface AllUserRepository extends JpaRepository<AllUser, Long>
     @Query("Select a from AllUser a where a.userId=?1")
     AllUser getUserById(int userId );
     
-    @Query("Select a from AllUser a where a.drContractNumber is not null")
+    @Query("Select a from AllUser a, DRContracts b, UserAccessTypeMapping c where a.drContractNumber = b.contractNumber and a.userId=c.allUser.userId and c.userTypepl.userTypeId =2 and a.drContractNumber is not null")
     List<AllUser> getAllDrCustomers( );
     
     @Query("Select a from DRContracts a where a.contractNumber =?1")
