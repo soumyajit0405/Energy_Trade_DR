@@ -123,7 +123,8 @@ public class DRController extends AbstractBaseController
         {
         	int eventSetId=Integer.parseInt(inputDetails.get("eventSetId"));
         	int version=Integer.parseInt(inputDetails.get("version"));
-            String directory="D:\\UpWork Projects\\temp\\sample.xlsx";
+            //String directory="D:\\UpWork Projects\\temp\\sample.xlsx";
+            String directory="/home/"+"sample1.xlsx";
             //String directory="C:\\Soumyajit\\ET-files-20200417T033846Z-001\\ET-files\\EnergyTrade-DR\\"+"sample.xlsx";
             response =  drservice.restoreEventSet(directory, eventSetId, version);
             

@@ -13,6 +13,24 @@ public class EventSetEventDto extends AbstractBaseDto {
 	private String eventName;
 	private Date eventStartTime;
 	private String counterBidFlag;
+	private String earnings;
+	private String isFineApplicable;
+	public String getEarnings() {
+		return earnings;
+	}
+
+	public void setEarnings(String earnings) {
+		this.earnings = earnings;
+	}
+
+	public String getIsFineApplicable() {
+		return isFineApplicable;
+	}
+
+	public void setIsFineApplicable(String isFineApplicable) {
+		this.isFineApplicable = isFineApplicable;
+	}
+
 	public String getCounterBidFlag() {
 		return counterBidFlag;
 	}

@@ -148,7 +148,8 @@ public class DRCustomerDao {
 					eventSetEvent.setCounterBidFlag(evmp.getCounterBidFlag());
 					eventSetEvent.setCustomerFine(evmp.getCustomerFine());
 					eventSetEvent.setEventCustomerMappingStatus(String.valueOf(evmp.getEventCustomerStatusId()));
-
+					eventSetEvent.setEarnings(Double.toString(evmp.getEarnings()));
+					eventSetEvent.setIsFineApplicable(evmp.getIsFineApplicable());
 					listOfEvents.add(eventSetEvent);
 
 				}

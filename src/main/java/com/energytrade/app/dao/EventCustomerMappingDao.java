@@ -82,6 +82,12 @@ public class EventCustomerMappingDao extends AbstractBaseDao {
 		ArrayList<Integer> deviceList = (ArrayList<Integer>) inputDetails.get("devices");
 
 		try {
+			AllEvent event = eventRepository.getEventById(eventId);
+			if (event.getCommitedPower()+committedPower > event.getPlannedPower()) {
+				response.put("message", "Power Committed is already more than Planned Power");
+				response.put("key", "200");
+				return response;
+			}
 			eventCustomerMappingRepo.counterbidInEvent(userId, eventId, committedPower, counterBidAmount, "Y");
 			ArrayList<EventCustomerDevices> eventCustomerDevicesList = new ArrayList<EventCustomerDevices>();
 			EventCustomerMapping eventCustomerMapping = eventCustomerMappingRepo.getEventCustomerMapping(eventId,
