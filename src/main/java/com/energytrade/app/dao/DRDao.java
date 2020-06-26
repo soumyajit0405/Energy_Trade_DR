@@ -177,7 +177,23 @@ public class DRDao extends AbstractBaseDao {
 			}
 			
 			int userId = alluser.getUserId();
-			eventSet = updateEventSetData(userId, eventSetId, false);
+			AllEventSet alleventset = eventsetrepo.getEventSet(eventSetId);
+			if(eventrepo.getLatestEvent(eventSetId).size()>0) {
+				AllEvent currentLastEvent = eventrepo.getLatestEvent(eventSetId).get(0);
+				this.eventNameSuffix = Integer.parseInt(currentLastEvent.getEventName().substring(alleventset.getName().length()));
+			}
+			EventStatusPl eventStatusPl = null;
+			eventStatusPl = eventrepo.getEventStatus("Created");
+			List<AllEvent> CreatedEvents = eventrepo.getEventByStatusId(eventSetId, eventStatusPl.getEventStatusId());
+			eventStatusPl = eventrepo.getEventStatus("Published");
+			List<AllEvent> PublishedEvents = eventrepo.getEventByStatusId(eventSetId, eventStatusPl.getEventStatusId());
+			eventStatusPl = eventrepo.getEventStatus("Cancelled");
+			List<AllEvent> cancelledEvents = eventrepo.getEventByStatusId(eventSetId, eventStatusPl.getEventStatusId());
+			eventStatusPl = eventrepo.getEventStatus("Expired");
+			List<AllEvent> expireEvents = eventrepo.getEventByStatusId(eventSetId, eventStatusPl.getEventStatusId());
+			
+			// eventSet = updateEventSetData(userId, eventSetId, false);
+			
 			createOrUpdateEventSetVersionHistoryData(imageByte, formatDate, eventSet);	// This method is saving file as Base64 string in Database
 			AllEventSetDto allEventSets = new AllEventSetDto();
 			allEventSets.setEventSetId(eventSetId);
@@ -198,6 +214,11 @@ public class DRDao extends AbstractBaseDao {
 			allEventSets.setPublishedEvents("0");
 			eventsetrepo.updateEventSet(Double.parseDouble(powerAndPrice.get(0)),
 					Double.parseDouble(powerAndPrice.get(1)), allEventSets.getEventSetId());
+			
+			deletionWhileUpdatingEventSetData(CreatedEvents);
+			deletionWhileUpdatingEventSetData(PublishedEvents);
+			deletionWhileUpdatingEventSetData(cancelledEvents);
+			deletionWhileUpdatingEventSetData(expireEvents);
 			eventsetrepo.updateVersion(eventSetId);
 			
 			internalresponse.put("eventSet", allEventSets);
@@ -243,7 +264,19 @@ public class DRDao extends AbstractBaseDao {
 			AllEventSet allEventSet = eventSet.getAllEventSet();
 			AllUser alluser = allEventSet.getAllUser();
 			int userId = alluser.getUserId();
-			allEventSet = updateEventSetData(userId, eventSetId, true);
+			
+			if(eventrepo.getLatestEvent(eventSetId).size()>0) {
+				AllEvent currentLastEvent = eventrepo.getLatestEvent(eventSetId).get(0);
+				this.eventNameSuffix = Integer.parseInt(currentLastEvent.getEventName().substring(allEventSet.getName().length()));
+			}
+			
+			EventStatusPl eventStatusPl = null;
+			eventStatusPl = eventrepo.getEventStatus("Created");
+			List<AllEvent> CreatedEvents = eventrepo.getEventByStatusId(eventSetId, eventStatusPl.getEventStatusId());
+			eventStatusPl = eventrepo.getEventStatus("Published");
+			List<AllEvent> PublishedEvents = eventrepo.getEventByStatusId(eventSetId, eventStatusPl.getEventStatusId());
+			
+			//allEventSet = updateEventSetData(userId, eventSetId, true);
 			AllEventSetDto allEventSets = new AllEventSetDto();
 			allEventSets.setEventSetId(eventSetId);
 			allEventSets.setEventSetName(allEventSet.getName());
@@ -263,6 +296,8 @@ public class DRDao extends AbstractBaseDao {
 			allEventSets.setPublishedEvents("0");
 			eventsetrepo.updateEventSet(Double.parseDouble(powerAndPrice.get(0)),
 					Double.parseDouble(powerAndPrice.get(1)), allEventSets.getEventSetId());
+			deletionWhileUpdatingEventSetData(CreatedEvents);
+			deletionWhileUpdatingEventSetData(PublishedEvents);
 			eventsetrepo.restoreVersion(eventSetId, version);
 			
 			internalresponse.put("eventSet", allEventSets);
@@ -299,23 +334,7 @@ public class DRDao extends AbstractBaseDao {
 		return eventSetVerHist;
 	}
 	
-	public AllEventSet updateEventSetData(int userId, int eventSetId, boolean restoreFlag) {
-		deletionWhileUpdatingEventSetData(userId, eventSetId, "Created");
-		deletionWhileUpdatingEventSetData(userId, eventSetId, "Published");
-		deletionWhileUpdatingEventSetData(userId, eventSetId, "Cancelled");
-		deletionWhileUpdatingEventSetData(userId, eventSetId, "Expired");
-		AllEventSet alleventset = eventsetrepo.getEventSet(eventSetId);
-		if(eventrepo.getLatestEvent(eventSetId).size()>0) {
-			AllEvent currentLastEvent = eventrepo.getLatestEvent(eventSetId).get(0);
-			this.eventNameSuffix = Integer.parseInt(currentLastEvent.getEventName().substring(alleventset.getName().length()));
-		}
-		return alleventset;
-	}
-	
-	public void deletionWhileUpdatingEventSetData(int userId, int eventSetId, String statusName) {
-		EventStatusPl eventStatusPl = null;
-		eventStatusPl = eventrepo.getEventStatus(statusName);
-		List<AllEvent> eventsToBeDeleted = eventrepo.getEventByStatusId(eventSetId, eventStatusPl.getEventStatusId());
+	public void deletionWhileUpdatingEventSetData(List<AllEvent> eventsToBeDeleted) {
 		Iterator<AllEvent> it = eventsToBeDeleted.iterator();
 		while(it.hasNext()) {
 			AllEvent event = it.next();
@@ -1352,7 +1371,7 @@ public HashMap<String, Object> loginDSOUser(String email, String password) throw
 	public HashMap<String, String> downloadVersion(int eventSetId, int version){
 		HashMap<String, String> fileData = new HashMap<>();
 		EventSetVersionHistory obj = eventsetVersionHistRepo.getByEventSeIdAndVersion(eventSetId, version);
-		String fileName = eventSetId + "-" + version + ".xlsx";
+		String fileName = obj.getAllEventSet().getName() + "-" + version + ".xlsx";
 		fileData.put("fileName", fileName);
 		fileData.put("fileEncodedString", obj.getUploadedFile());
 		
