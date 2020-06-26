@@ -194,7 +194,7 @@ public class DRDao extends AbstractBaseDao {
 			
 			// eventSet = updateEventSetData(userId, eventSetId, false);
 			
-			createOrUpdateEventSetVersionHistoryData(imageByte, formatDate, eventSet);	// This method is saving file as Base64 string in Database
+			EventSetVersionHistory eventSetVerHist = createOrUpdateEventSetVersionHistoryData(imageByte, formatDate, eventSet);	// This method is saving file as Base64 string in Database
 			AllEventSetDto allEventSets = new AllEventSetDto();
 			allEventSets.setEventSetId(eventSetId);
 			allEventSets.setEventSetName(eventSet.getName());
@@ -219,7 +219,7 @@ public class DRDao extends AbstractBaseDao {
 			deletionWhileUpdatingEventSetData(PublishedEvents);
 			deletionWhileUpdatingEventSetData(cancelledEvents);
 			deletionWhileUpdatingEventSetData(expireEvents);
-			eventsetrepo.updateVersion(eventSetId);
+			eventsetrepo.updateVersion(eventSetId, eventSetVerHist.getVersion());
 			
 			internalresponse.put("eventSet", allEventSets);
 
@@ -275,6 +275,10 @@ public class DRDao extends AbstractBaseDao {
 			List<AllEvent> CreatedEvents = eventrepo.getEventByStatusId(eventSetId, eventStatusPl.getEventStatusId());
 			eventStatusPl = eventrepo.getEventStatus("Published");
 			List<AllEvent> PublishedEvents = eventrepo.getEventByStatusId(eventSetId, eventStatusPl.getEventStatusId());
+			eventStatusPl = eventrepo.getEventStatus("Cancelled");
+			List<AllEvent> cancelledEvents = eventrepo.getEventByStatusId(eventSetId, eventStatusPl.getEventStatusId());
+			eventStatusPl = eventrepo.getEventStatus("Expired");
+			List<AllEvent> expireEvents = eventrepo.getEventByStatusId(eventSetId, eventStatusPl.getEventStatusId());
 			
 			//allEventSet = updateEventSetData(userId, eventSetId, true);
 			AllEventSetDto allEventSets = new AllEventSetDto();
@@ -298,7 +302,9 @@ public class DRDao extends AbstractBaseDao {
 					Double.parseDouble(powerAndPrice.get(1)), allEventSets.getEventSetId());
 			deletionWhileUpdatingEventSetData(CreatedEvents);
 			deletionWhileUpdatingEventSetData(PublishedEvents);
-			eventsetrepo.restoreVersion(eventSetId, version);
+			deletionWhileUpdatingEventSetData(cancelledEvents);
+			deletionWhileUpdatingEventSetData(expireEvents);
+			eventsetrepo.updateVersion(eventSetId, version);
 			
 			internalresponse.put("eventSet", allEventSets);
 
@@ -343,7 +349,6 @@ public class DRDao extends AbstractBaseDao {
 			eventcustomerdevicerepo.deleteByEventId(eventId);
 			eventcustomerrepo.deleteByEventId(eventId);
 			eventrepo.deleteById(eventId);
-			System.out.println("Deleted Id: "+eventId);
 		}
 	}
 
