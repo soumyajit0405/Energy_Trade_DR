@@ -302,6 +302,8 @@ public class DRDao extends AbstractBaseDao {
 	public AllEventSet updateEventSetData(int userId, int eventSetId, boolean restoreFlag) {
 		deletionWhileUpdatingEventSetData(userId, eventSetId, "Created");
 		deletionWhileUpdatingEventSetData(userId, eventSetId, "Published");
+		deletionWhileUpdatingEventSetData(userId, eventSetId, "Cancelled");
+		deletionWhileUpdatingEventSetData(userId, eventSetId, "Expired");
 		AllEventSet alleventset = eventsetrepo.getEventSet(eventSetId);
 		if(eventrepo.getLatestEvent(eventSetId).size()>0) {
 			AllEvent currentLastEvent = eventrepo.getLatestEvent(eventSetId).get(0);
@@ -359,7 +361,7 @@ public class DRDao extends AbstractBaseDao {
 			listOfObjects.add(alleventset1);
 			// return alleventset1;
 		} catch (Exception e) {
-
+			e.printStackTrace();
 		} finally {
 
 		}
@@ -478,9 +480,12 @@ public class DRDao extends AbstractBaseDao {
 				}
 				 final long ONE_MINUTE_IN_MILLIS=60000;//millisecs
 				  final long HALFHOUR = 1800*1000;
-			        Date d1=new Date(new Date().getTime() +5*HOUR+HALFHOUR - 5*ONE_MINUTE_IN_MILLIS);
+			    // Date d1=new Date(new Date().getTime() +5*HOUR+HALFHOUR - 5*ONE_MINUTE_IN_MILLIS);
 			      
-				Date afterHour = new Date(now.getTime() +5*HOUR+HALFHOUR+ 1 * HOUR);
+				//Date afterHour = new Date(now.getTime() +5*HOUR+HALFHOUR+ 1 * HOUR);
+				 Date d1=new Date(new Date().getTime() );
+			      
+				Date afterHour = new Date(now.getTime() + 1 * HOUR);
 
 				listOfDates = CommonUtility.getDateFormatted(cell2.getStringCellValue(),alleventset.getDate() );
 				if(listOfDates.get(0).compareTo(afterHour) < 0) {
@@ -511,9 +516,6 @@ public class DRDao extends AbstractBaseDao {
 				if (cell4 != null) {
 					allevent.setExpectedPrice(cell4.getNumericCellValue());
 					alleventsetdto.setPrice(Double.toString(cell4.getNumericCellValue()));
-				} else {
-					allevent.setExpectedPrice(0);
-					alleventsetdto.setPrice("0");
 				}
 				
 				allevent.setEventStartTime(listOfDates.get(0));

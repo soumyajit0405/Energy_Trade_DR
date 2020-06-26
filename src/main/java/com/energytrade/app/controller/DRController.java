@@ -65,7 +65,7 @@ public class DRController extends AbstractBaseController
             byte[] imageByte=Base64.decodeBase64(imageDataArr);
             
             String directory="/home/"+"sample.xlsx";
-            //String directory="C:\\Soumyajit\\ET-files-20200417T033846Z-001\\ET-files\\EnergyTrade-DR\\"+"sample.xlsx";
+           // String directory="C:\\Soumyajit\\ET-files-20200417T033846Z-001\\ET-files\\EnergyTrade-DR\\"+"sample.xlsx";
             response =  drservice.updateEventSet(directory, imageByte, eventSetId);
             
         }

@@ -477,24 +477,31 @@ public class DRCustomerDao {
 
 		HashMap<String, Object> response = new HashMap<String, Object>();
 		int penaltyEventsCount = 0, participatedEventsCount = 0, successfulEventsCount = 0, cancelledEventsCount = 0;
+		double earnings =0, customerFine=0;
 		try {
 			List<EventCustomerMapping> eventCustomerMappings = eventCustomerRepo.getEventCustomerByUserId(userId);
 			for (EventCustomerMapping evmp : eventCustomerMappings) {
-				if (evmp.getEventCustomerStatusId() == 3) {
+				if (evmp.getEventCustomerStatusId() == 3 || evmp.getEventCustomerStatusId() == 5) {
 					participatedEventsCount++;
-				} else if (evmp.getEventCustomerStatusId() == 8 && evmp.getIsFineApplicable().equalsIgnoreCase("N")) {
+				} else if (evmp.getEventCustomerStatusId() == 15 && evmp.getIsFineApplicable().equalsIgnoreCase("N")) {
 					successfulEventsCount++;
-				} else if (evmp.getEventCustomerStatusId() == 8 && evmp.getIsFineApplicable().equalsIgnoreCase("Y")) {
+				} else if (evmp.getEventCustomerStatusId() == 15 && evmp.getIsFineApplicable().equalsIgnoreCase("Y")) {
 					penaltyEventsCount++;
 				} else if (evmp.getEventCustomerStatusId() == 9) {
 					cancelledEventsCount++;
 				}
 			}
-
+			List<EventCustomerMapping> eventCustomerMapEarnings = eventCustomerRepo.getEventCustomerEarnings(userId);
+			for (EventCustomerMapping evmp : eventCustomerMapEarnings) {
+				earnings=earnings+evmp.getEarnings();	
+				customerFine = customerFine +evmp.getCustomerFine();
+			}
 			response.put("participatedEventsCount", participatedEventsCount);
 			response.put("successfulEventsCount", successfulEventsCount);
 			response.put("penaltyEventsCount", penaltyEventsCount);
 			response.put("cancelledEventsCount", cancelledEventsCount);
+			response.put("totalEarnings", earnings);
+			response.put("totalPenalty", customerFine);
 			response.put("message", CustomMessages.getCustomMessages("SUC"));
 			response.put("key", "200");
 

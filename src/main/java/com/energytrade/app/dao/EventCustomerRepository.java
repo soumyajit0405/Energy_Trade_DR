@@ -76,6 +76,9 @@ public interface EventCustomerRepository extends JpaRepository<EventCustomerMapp
 	  @Query("Select a from EventCustomerMapping a where  a.allUser.userId=?1") 
 	  List<EventCustomerMapping> getEventCustomerByUserId(int customerId);
 	  
+	  @Query("Select a from EventCustomerMapping a where  a.allUser.userId=?1 and a.eventCustomerStatusId=15") 
+	  List<EventCustomerMapping> getEventCustomerEarnings(int customerId);
+	  
 	  @Modifying
 	  @Transactional
 	  @Query("delete from EventCustomerMapping where allEvent.eventId in (?1)") 
