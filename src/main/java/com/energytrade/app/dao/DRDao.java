@@ -730,7 +730,7 @@ public class DRDao extends AbstractBaseDao {
 			alleventsetdto.setEventSetStatus(alleventset.getEventSetStatusPl().getStatusName());
 			alleventsetdto.setUserId(alleventset.getAllUser().getUserId());
 			alleventsetdto.setUserName(alleventset.getAllUser().getFullName());
-			alleventsetdto.setDateOfOccurence(alleventset.getUploadTime().toString());
+			alleventsetdto.setDateOfOccurence(alleventset.getDate().toString());
 			alleventsetdto.setTotalPrice(Double.toString(alleventset.getTotalPrice()));
 			alleventsetdto.setPlannedPower(Double.toString(alleventset.getPlannedPower()));
 			alleventsetdto.setActualPower(Double.toString(alleventset.getActualPower()));
