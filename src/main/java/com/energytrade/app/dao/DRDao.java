@@ -127,15 +127,12 @@ public class DRDao extends AbstractBaseDao {
 			allEventSets.setPublishedEvents("0");
 			eventsetrepo.updateEventSet(Double.parseDouble(powerAndPrice.get(0)),
 					Double.parseDouble(powerAndPrice.get(1)), allEventSets.getEventSetId());
-			// internalresponse.put("events", listOfEvents);
 			internalresponse.put("eventSet", allEventSets);
 
 			response.put("responseStatus", "1");
 			response.put("responseMessage", "The request was successfully served.");
 			response.put("response", internalresponse);
 			response.put("customMessage", null);
-			// createEventSetObjects(file);
-			// Create Workbook instance holding reference to .xlsx file
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -178,21 +175,43 @@ public class DRDao extends AbstractBaseDao {
 			
 			int userId = alluser.getUserId();
 			AllEventSet alleventset = eventsetrepo.getEventSet(eventSetId);
-			if(eventrepo.getLatestEvent(eventSetId).size()>0) {
-				AllEvent currentLastEvent = eventrepo.getLatestEvent(eventSetId).get(0);
+			List<AllEvent> allEventList = eventrepo.getLatestEvent(eventSetId);
+			
+			int createdStatusId = eventrepo.getEventStatus("Created").getEventStatusId();
+			int publishedStatusId = eventrepo.getEventStatus("Published").getEventStatusId();
+			int cancelledStatusId = eventrepo.getEventStatus("Cancelled").getEventStatusId();
+			int expiredStatusId = eventrepo.getEventStatus("Expired").getEventStatusId();
+			
+			List<AllEvent> CreatedEvents = new ArrayList<>();
+			List<AllEvent> PublishedEvents = new ArrayList<>();
+			List<AllEvent> cancelledEvents = new ArrayList<>();
+			List<AllEvent> expireEvents = new ArrayList<>();
+			
+			Iterator<AllEvent> itr = allEventList.iterator();
+			while(itr.hasNext()) {
+				AllEvent event = itr.next();
+				if(event.getEventStatusPl().getEventStatusId() == createdStatusId) {
+					CreatedEvents.add(event);
+					itr.remove();
+				}
+				if(event.getEventStatusPl().getEventStatusId() == publishedStatusId) {
+					PublishedEvents.add(event);
+					itr.remove();
+				}
+				if(event.getEventStatusPl().getEventStatusId() == cancelledStatusId) {
+					cancelledEvents.add(event);
+					itr.remove();
+				}
+				if(event.getEventStatusPl().getEventStatusId() == expiredStatusId) {
+					expireEvents.add(event);
+					itr.remove();
+				}
+			}
+			
+			if(allEventList.size()>0) {
+				AllEvent currentLastEvent = allEventList.get(0);
 				this.eventNameSuffix = Integer.parseInt(currentLastEvent.getEventName().substring(alleventset.getName().length()));
 			}
-			EventStatusPl eventStatusPl = null;
-			eventStatusPl = eventrepo.getEventStatus("Created");
-			List<AllEvent> CreatedEvents = eventrepo.getEventByStatusId(eventSetId, eventStatusPl.getEventStatusId());
-			eventStatusPl = eventrepo.getEventStatus("Published");
-			List<AllEvent> PublishedEvents = eventrepo.getEventByStatusId(eventSetId, eventStatusPl.getEventStatusId());
-			eventStatusPl = eventrepo.getEventStatus("Cancelled");
-			List<AllEvent> cancelledEvents = eventrepo.getEventByStatusId(eventSetId, eventStatusPl.getEventStatusId());
-			eventStatusPl = eventrepo.getEventStatus("Expired");
-			List<AllEvent> expireEvents = eventrepo.getEventByStatusId(eventSetId, eventStatusPl.getEventStatusId());
-			
-			// eventSet = updateEventSetData(userId, eventSetId, false);
 			
 			EventSetVersionHistory eventSetVerHist = createOrUpdateEventSetVersionHistoryData(imageByte, formatDate, eventSet);	// This method is saving file as Base64 string in Database
 			AllEventSetDto allEventSets = new AllEventSetDto();
@@ -221,6 +240,7 @@ public class DRDao extends AbstractBaseDao {
 			deletionWhileUpdatingEventSetData(expireEvents);
 			eventsetrepo.updateVersion(eventSetId, eventSetVerHist.getVersion());
 			
+			this.eventNameSuffix = 0;
 			internalresponse.put("eventSet", allEventSets);
 
 			response.put("responseStatus", "1");
@@ -265,22 +285,44 @@ public class DRDao extends AbstractBaseDao {
 			AllUser alluser = allEventSet.getAllUser();
 			int userId = alluser.getUserId();
 			
-			if(eventrepo.getLatestEvent(eventSetId).size()>0) {
-				AllEvent currentLastEvent = eventrepo.getLatestEvent(eventSetId).get(0);
+			List<AllEvent> allEventList = eventrepo.getLatestEvent(eventSetId);
+			
+			int createdStatusId = eventrepo.getEventStatus("Created").getEventStatusId();
+			int publishedStatusId = eventrepo.getEventStatus("Published").getEventStatusId();
+			int cancelledStatusId = eventrepo.getEventStatus("Cancelled").getEventStatusId();
+			int expiredStatusId = eventrepo.getEventStatus("Expired").getEventStatusId();
+			
+			List<AllEvent> CreatedEvents = new ArrayList<>();
+			List<AllEvent> PublishedEvents = new ArrayList<>();
+			List<AllEvent> cancelledEvents = new ArrayList<>();
+			List<AllEvent> expireEvents = new ArrayList<>();
+			
+			Iterator<AllEvent> itr = allEventList.iterator();
+			while(itr.hasNext()) {
+				AllEvent event = itr.next();
+				if(event.getEventStatusPl().getEventStatusId() == createdStatusId) {
+					CreatedEvents.add(event);
+					itr.remove();
+				}
+				if(event.getEventStatusPl().getEventStatusId() == publishedStatusId) {
+					PublishedEvents.add(event);
+					itr.remove();
+				}
+				if(event.getEventStatusPl().getEventStatusId() == cancelledStatusId) {
+					cancelledEvents.add(event);
+					itr.remove();
+				}
+				if(event.getEventStatusPl().getEventStatusId() == expiredStatusId) {
+					expireEvents.add(event);
+					itr.remove();
+				}
+			}
+			
+			if(allEventList.size()>0) {
+				AllEvent currentLastEvent = allEventList.get(0);
 				this.eventNameSuffix = Integer.parseInt(currentLastEvent.getEventName().substring(allEventSet.getName().length()));
 			}
 			
-			EventStatusPl eventStatusPl = null;
-			eventStatusPl = eventrepo.getEventStatus("Created");
-			List<AllEvent> CreatedEvents = eventrepo.getEventByStatusId(eventSetId, eventStatusPl.getEventStatusId());
-			eventStatusPl = eventrepo.getEventStatus("Published");
-			List<AllEvent> PublishedEvents = eventrepo.getEventByStatusId(eventSetId, eventStatusPl.getEventStatusId());
-			eventStatusPl = eventrepo.getEventStatus("Cancelled");
-			List<AllEvent> cancelledEvents = eventrepo.getEventByStatusId(eventSetId, eventStatusPl.getEventStatusId());
-			eventStatusPl = eventrepo.getEventStatus("Expired");
-			List<AllEvent> expireEvents = eventrepo.getEventByStatusId(eventSetId, eventStatusPl.getEventStatusId());
-			
-			//allEventSet = updateEventSetData(userId, eventSetId, true);
 			AllEventSetDto allEventSets = new AllEventSetDto();
 			allEventSets.setEventSetId(eventSetId);
 			allEventSets.setEventSetName(allEventSet.getName());
@@ -305,7 +347,7 @@ public class DRDao extends AbstractBaseDao {
 			deletionWhileUpdatingEventSetData(cancelledEvents);
 			deletionWhileUpdatingEventSetData(expireEvents);
 			eventsetrepo.updateVersion(eventSetId, version);
-			
+			this.eventNameSuffix = 0;
 			internalresponse.put("eventSet", allEventSets);
 
 			response.put("responseStatus", "1");
