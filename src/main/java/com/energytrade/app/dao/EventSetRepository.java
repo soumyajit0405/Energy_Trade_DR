@@ -68,12 +68,8 @@ public interface EventSetRepository extends JpaRepository<AllEventSet, Long>
 	  void removeCommittedPower(double power, int eventSetId);
 	  
 	  @Modifying
-	  @Query("update AllEventSet a set a.activeVersion=a.activeVersion+1 where a.eventSetId=?1")
-	  void updateVersion(int eventSetId);
-	  
-	  @Modifying
 	  @Query("update AllEventSet a set a.activeVersion=?2 where a.eventSetId=?1")
-	  void restoreVersion(int eventSetId, int version);
+	  void updateVersion(int eventSetId, int version);
 	
 	  @Query("Select count(a.eventSetId) from AllEventSet a where a.date=?1  and a.allUser.userId=?2 and a.divison=?3") 
 	  int getEventSetCountPerDay(Date uploadDate, int userId, String divison);

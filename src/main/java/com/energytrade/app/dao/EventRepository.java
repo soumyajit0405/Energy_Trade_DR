@@ -32,18 +32,18 @@ import org.springframework.data.jpa.repository.JpaRepository;
 @Repository
 public interface EventRepository extends JpaRepository<AllEvent, Long>
 {
-	@Query("Select COALESCE(max(eventId),0) from AllEvent a ") 
-	  int getEventCount();
+	 @Query("Select COALESCE(max(eventId),0) from AllEvent a ") 
+	 int getEventCount();
 	
-	@Query("Select a from AllEvent a where a.allEventSet.eventSetId=?1 order by a.eventId desc") 
-	List<AllEvent> getLatestEvent(int eventSetId);
+	 @Query("Select a from AllEvent a where a.allEventSet.eventSetId=?1 order by a.eventId desc") 
+	 List<AllEvent> getLatestEvent(int eventSetId);
 	
-	@Query("Select a from EventStatusPl a where  a.name=?1") 
-	  EventStatusPl getEventStatus(String eventStatusName);
+	 @Query("Select a from EventStatusPl a where  a.name=?1") 
+	 EventStatusPl getEventStatus(String eventStatusName);
 	
 	 @Modifying
-	    @Query("update AllEvent a set a.eventStatusPl.eventStatusId=?1 where a.eventId=?2")
-	     void updateEvent(int eventStatusId, int eventId);
+     @Query("update AllEvent a set a.eventStatusPl.eventStatusId=?1 where a.eventId=?2")
+     void updateEvent(int eventStatusId, int eventId);
 	
 	 @Query("Select COUNT(a.eventId) from AllEvent a where a.allEventSet.eventSetId=(select allEventSet.eventSetId from AllEvent where eventId=?1) and a.eventStatusPl.eventStatusId=1") 
 	  int getEventByStatusId(int eventId);
@@ -76,6 +76,6 @@ public interface EventRepository extends JpaRepository<AllEvent, Long>
 			
 	  @Modifying
 	  @Query("delete from AllEvent a where a.eventId=?1") 
-	  void deleteById(int eventId);
-			 
-}
+		void deleteById(int eventId);
+
+	}
