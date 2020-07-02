@@ -45,6 +45,9 @@ public interface EventSetRepository extends JpaRepository<AllEventSet, Long>
 	  @Query("Select count(a.userId) from AllUser a where a.phoneNumber=?1  and a.password=?2") 
 	  int loginUser(String phoneNumber, String password);
 	  
+	  @Query("Select a.activeVersion from AllEventSet a where a.eventSetId=?1") 
+	  int getActiveVersion(int eventSetId);
+	  
 	  @Query("Select a from EventSetStatusPl a where a.statusName=?1 ") 
 	  EventSetStatusPl getEventSetStatus(String eventStatusName);
 	  
@@ -63,8 +66,12 @@ public interface EventSetRepository extends JpaRepository<AllEventSet, Long>
 	  @Modifying
 	  @Query("update AllEventSet a set a.commitedPower=a.commitedPower-?1 where a.eventSetId=?2")
 	  void removeCommittedPower(double power, int eventSetId);
+	  
+	  @Modifying
+	  @Query("update AllEventSet a set a.activeVersion=?2 where a.eventSetId=?1")
+	  void updateVersion(int eventSetId, int version);
 	
-	  @Query("Select count(a.eventSetId) from AllEventSet a where a.date=?1  and a.allUser.userId=?2") 
-	  int getEventSetCountPerDay(Date uploadDate, int userId);
+	  @Query("Select count(a.eventSetId) from AllEventSet a where a.date=?1  and a.allUser.userId=?2 and a.divison=?3") 
+	  int getEventSetCountPerDay(Date uploadDate, int userId, String divison);
         
 }

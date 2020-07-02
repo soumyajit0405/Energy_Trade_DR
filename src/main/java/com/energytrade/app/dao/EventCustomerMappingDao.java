@@ -82,6 +82,12 @@ public class EventCustomerMappingDao extends AbstractBaseDao {
 		ArrayList<Integer> deviceList = (ArrayList<Integer>) inputDetails.get("devices");
 
 		try {
+			AllEvent event = eventRepository.getEventById(eventId);
+			if (event.getCommitedPower()+committedPower > event.getPlannedPower()) {
+				response.put("message", "Power Committed is already more than Planned Power");
+				response.put("key", "200");
+				return response;
+			}
 			eventCustomerMappingRepo.counterbidInEvent(userId, eventId, committedPower, counterBidAmount, "Y");
 			ArrayList<EventCustomerDevices> eventCustomerDevicesList = new ArrayList<EventCustomerDevices>();
 			EventCustomerMapping eventCustomerMapping = eventCustomerMappingRepo.getEventCustomerMapping(eventId,
@@ -117,8 +123,13 @@ public class EventCustomerMappingDao extends AbstractBaseDao {
 				return response;
 			}
 			eventCustomerMappingRepo.withdrawFromEvent(userId, eventId);
+			if (evmt.getEventCustomerStatusId() == 3) {
 			eventRepository.removeEventPower(evmt.getCommitedPower(),eventId);
 			eventSetRepository.removeCommittedPower(evmt.getCommitedPower(), event.getAllEventSet().getEventSetId());
+			}
+			else if (evmt.getEventCustomerStatusId() == 4) {
+				eventCustomerMappingRepo.withdrawFromEventInCounterBid(userId, eventId,event.getExpectedPrice());
+			}
 			response.put("message", CustomMessages.getCustomMessages("SUC"));
 			response.put("key", "200");
 		} catch (Exception e) {
@@ -150,8 +161,13 @@ public class EventCustomerMappingDao extends AbstractBaseDao {
 		}
 
 		try {
+			EventCustomerMapping evtmp = eventCustomerMappingRepo.getEventCustomerMapping(eventId, userId);
+			double resultantPower = updatedCommitedPower - evtmp.getCommitedPower();
 			eventCustomerMappingRepo.updateEventCommitments(userId, eventId, updatedCommitedPower,
 					updatedCounterBidAmount);
+			if (evtmp.getEventCustomerStatusId() == 3) {
+			eventRepository.addEventPower(resultantPower, eventId);
+			}
 			ArrayList<EventCustomerDevices> eventCustomerDevicesList = new ArrayList<EventCustomerDevices>();
 			EventCustomerMapping eventCustomerMapping = eventCustomerMappingRepo.getEventCustomerMapping(eventId,
 					userId);

@@ -29,6 +29,18 @@ public class EventCustomerMapping implements Serializable {
 	@Column(name="customer_fine")
 	private double customerFine;
 	
+	@Column(name="earnings")
+	private double earnings;
+	
+	public double getEarnings() {
+		return earnings;
+	}
+
+	public void setEarnings(double earnings) {
+		this.earnings = earnings;
+	}
+
+
 	@Column(name="is_fine_applicable")
 	private String isFineApplicable;
 
@@ -107,7 +119,6 @@ public class EventCustomerMapping implements Serializable {
 	public void setIsFineApplicable(String isFineApplicable) {
 		this.isFineApplicable = isFineApplicable;
 	}
-
 
 	@Column(name="event_customer_status_id")
 	private int eventCustomerStatusId;
@@ -273,9 +284,4 @@ public class EventCustomerMapping implements Serializable {
 	public void setEventCustomerDevices(List<EventCustomerDevices> eventCustomerDevices) {
 		this.eventCustomerDevices = eventCustomerDevices;
 	}
-
-	
-	
-	
-
 }

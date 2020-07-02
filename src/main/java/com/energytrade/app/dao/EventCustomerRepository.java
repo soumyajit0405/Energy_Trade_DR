@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.List;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.energytrade.app.model.AllElectricityBoard;
 import com.energytrade.app.model.AllEventSet;
@@ -17,6 +18,7 @@ import com.energytrade.app.model.AllState;
 import com.energytrade.app.model.AllTimeslot;
 import com.energytrade.app.model.AllUser;
 import com.energytrade.app.model.ContractStatusPl;
+import com.energytrade.app.model.DRContracts;
 import com.energytrade.app.model.EventCustomerMapping;
 import com.energytrade.app.model.EventCustomerStatusPl;
 import com.energytrade.app.model.EventSetStatusPl;
@@ -42,8 +44,9 @@ public interface EventCustomerRepository extends JpaRepository<EventCustomerMapp
 	  @Query("Select a from EventCustomerMapping a where a.allEvent.eventId=?1 and a.allUser.userId=?2") 
 	  EventCustomerMapping getEventCustomerById(int eventId,int customerId);
 	 
-	  @Query("Select a from UserAccessLevelMapping a where a.userTypepl.userTypeId=2 and a.allUser.userId <> ?1") 
-	  List<UserAccessLevelMapping> getUserAccessLevel(int userId);
+	  @Query("Select a from UserAccessLevelMapping a, AllUser b, DRContracts c where a.userTypepl.userTypeId=2 and a.allUser.userId <> ?1 and b.userId=a.allUser.userId  and b.drContractNumber=c.contractNumber and c.division=?2") 
+	  List<UserAccessLevelMapping> getUserAccessLevel(int userId, String location);
+	  
 	  
 	  @Modifying
 	  @Query("delete from EventCustomerMapping a where a.allEvent.eventId=?1") 
@@ -72,4 +75,12 @@ public interface EventCustomerRepository extends JpaRepository<EventCustomerMapp
 	  
 	  @Query("Select a from EventCustomerMapping a where  a.allUser.userId=?1") 
 	  List<EventCustomerMapping> getEventCustomerByUserId(int customerId);
+	  
+	  @Query("Select a from EventCustomerMapping a where  a.allUser.userId=?1 and a.eventCustomerStatusId=15") 
+	  List<EventCustomerMapping> getEventCustomerEarnings(int customerId);
+	  
+	  @Modifying
+	  @Transactional
+	  @Query("delete from EventCustomerMapping where allEvent.eventId in (?1)") 
+	  void deleteByEventId(int eventId);
 }

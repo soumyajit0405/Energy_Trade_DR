@@ -23,5 +23,8 @@ public interface AllDsoRepository extends JpaRepository<AllDso, Long>
     
     @Query("Select a from AllDso a where a.emailId=?1 and a.password=?2 ")
     AllDso loginDSOUser(String email,String password );
+    
+    @Query("Select a from AllDso a where a.dsoId=?1 ")
+    AllDso getDsoDetails(int dsoId );
           
 }
