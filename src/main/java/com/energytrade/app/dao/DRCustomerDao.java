@@ -141,8 +141,8 @@ public class DRCustomerDao {
 					eventSetEvent.setEventStartTime(eventsForCustomer.get(j).getEventStartTime());
 					eventSetEvent.setEventEndTime(eventsForCustomer.get(j).getEventEndTime());
 					eventSetEvent.setEventEndTime(eventsForCustomer.get(j).getEventEndTime());
-					eventSetEvent.setCommittedPower(eventsForCustomer.get(j).getCommitedPower());
-					eventSetEvent.setActualPower(eventsForCustomer.get(j).getActualPower());
+					eventSetEvent.setCommittedPower(evmp.getCommitedPower());
+					eventSetEvent.setActualPower(evmp.getActualPower());
 					eventSetEvent.setBidprice(evmp.getBidPrice());
 					eventSetEvent.setCounterBidAmount(evmp.getCounterBidAmount());
 					eventSetEvent.setCounterBidFlag(evmp.getCounterBidFlag());
@@ -296,10 +296,13 @@ public class DRCustomerDao {
 				ddd.setPortNumber(aud.get(i).getPortNumber());
 				if (!aud.get(i).getPortNumber().equalsIgnoreCase("NA")) {
 				AllKiotSwitch kiotSwitch= allKiotSwithcesRepo.getAllKiotSwitchesById(Integer.parseInt((aud.get(i).getPortNumber())));
-				ddd.setCustomData(kiotSwitch.getCustomData());
-				ddd.setKiotDeviceId(Integer.toString(kiotSwitch.getId()));
-				ddd.setUsedFlag(kiotSwitch.getUsedFlag());
-				ddd.setDeviceName(kiotSwitch.getDeviceCustomName());
+				if (kiotSwitch != null) {
+					ddd.setCustomData(kiotSwitch.getCustomData());
+					ddd.setKiotDeviceId(Integer.toString(kiotSwitch.getId()));
+					ddd.setUsedFlag(kiotSwitch.getUsedFlag());
+					ddd.setDeviceName(kiotSwitch.getDeviceCustomName());	
+				}
+				
 				}
 				userDRdevices.add(ddd);
 			}

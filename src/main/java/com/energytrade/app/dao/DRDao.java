@@ -546,12 +546,12 @@ public class DRDao extends AbstractBaseDao {
 				}
 				 final long ONE_MINUTE_IN_MILLIS=60000;//millisecs
 				  final long HALFHOUR = 1800*1000;
-			    // Date d1=new Date(new Date().getTime() +5*HOUR+HALFHOUR - 5*ONE_MINUTE_IN_MILLIS);
+			     Date d1=new Date(new Date().getTime() +5*HOUR+HALFHOUR - 5*ONE_MINUTE_IN_MILLIS);
 			      
-				//Date afterHour = new Date(now.getTime() +5*HOUR+HALFHOUR+ 1 * HOUR);
-				 Date d1=new Date(new Date().getTime() );
+				Date afterHour = new Date(now.getTime() +5*HOUR+HALFHOUR+ 1 * HOUR);
+				// Date d1=new Date(new Date().getTime() );
 			      
-				Date afterHour = new Date(now.getTime() + 1 * HOUR);
+				//Date afterHour = new Date(now.getTime() + 1 * HOUR);
 
 				listOfDates = CommonUtility.getDateFormatted(cell2.getStringCellValue(),alleventset.getDate() );
 				if(listOfDates.get(0).compareTo(afterHour) < 0) {
@@ -680,7 +680,11 @@ public class DRDao extends AbstractBaseDao {
 				alleventdto.setStartTime(allevent.getEventStartTime().toString());
 				alleventdto.setEndTime(allevent.getEventEndTime().toString());
 				alleventdto.setCommittedPower(Double.toString(allevent.getCommitedPower()));
-				alleventdto.setShortfall("0");
+				if (allevent.getEventStatusPl().getEventStatusId() == 9) {
+				alleventdto.setShortfall(Double.toString(allevent.getCommitedPower() - allevent.getActualPower()));
+				} else {
+					alleventdto.setShortfall("0");
+				}
 				alleventdto.setActualPower(Double.toString(allevent.getActualPower()));
 				alleventdto.setStartTime(allevent.getEventStartTime().toString());
 				List<EventCustomerDto> listOfCustomers = new ArrayList<EventCustomerDto>();
@@ -702,7 +706,7 @@ public class DRDao extends AbstractBaseDao {
 						notifiedCount++;
 						noResponseCount++;
 					} 
-					if (allevent.getEventCustomerMappings().get(j).getEventCustomerStatusId() == 3 || allevent.getEventCustomerMappings().get(j).getEventCustomerStatusId() == 5 || allevent.getEventCustomerMappings().get(j).getEventCustomerStatusId() == 8 || allevent.getEventCustomerMappings().get(j).getEventCustomerStatusId() == 10) {
+					if (allevent.getEventCustomerMappings().get(j).getEventCustomerStatusId() == 3 || allevent.getEventCustomerMappings().get(j).getEventCustomerStatusId() == 5 || allevent.getEventCustomerMappings().get(j).getEventCustomerStatusId() == 8 || allevent.getEventCustomerMappings().get(j).getEventCustomerStatusId() == 10  || allevent.getEventCustomerMappings().get(j).getEventCustomerStatusId()==15 || allevent.getEventCustomerMappings().get(j).getEventCustomerStatusId()==11 || allevent.getEventCustomerMappings().get(j).getEventCustomerStatusId()==12 || allevent.getEventCustomerMappings().get(j).getEventCustomerStatusId() == 13) {
 						evdto.setParticipationStatus("1");	
 						participationCount++;
 						noResponseCount--;
@@ -788,6 +792,9 @@ public class DRDao extends AbstractBaseDao {
 			}
 			for (int i = 0; i < alleventset.getAllEvents().size(); i++) {
 				count = 0;
+				if (alleventset.getAllEvents().get(i).getEventId() == 1218) {
+					System.out.println(1218);
+				}
 				participationCount=0;noResponseCount=0;counterBid=0;notifiedCount=0;
 				AllEventDto alleventdto = new AllEventDto();
 				alleventdto.setEventId(alleventset.getAllEvents().get(i).getEventId());
@@ -808,7 +815,11 @@ public class DRDao extends AbstractBaseDao {
 						alleventset.getAllEvents().get(i).getEventEndTime().toString());
 				alleventdto.setCommittedPower(
 						Double.toString(alleventset.getAllEvents().get(i).getCommitedPower()));
-				alleventdto.setShortfall("0");
+				if (alleventset.getAllEvents().get(i).getEventStatusPl().getEventStatusId() == 9) {
+				alleventdto.setShortfall(Double.toString(alleventset.getAllEvents().get(i).getCommitedPower() - alleventset.getAllEvents().get(i).getActualPower()));
+				} else {
+					alleventdto.setShortfall("0");
+				}
 				alleventdto.setActualPower(
 						Double.toString(alleventset.getAllEvents().get(i).getActualPower()));
 				alleventdto.setStartTime(
@@ -832,7 +843,7 @@ public class DRDao extends AbstractBaseDao {
 					eventcustomerdto.setPrice(listOfCustomers.get(k).getBidPrice());
 					eventcustomerdto.setIsSelected("Y");
 					// eventCustomerDto.setActualPower(allevent.getActualPower()); 
-					if (listOfCustomers.get(k).getEventCustomerStatusId() == 3 || listOfCustomers.get(k).getEventCustomerStatusId() == 5 || listOfCustomers.get(k).getEventCustomerStatusId() == 8 || listOfCustomers.get(k).getEventCustomerStatusId() == 10) {
+					if (listOfCustomers.get(k).getEventCustomerStatusId() == 3 || listOfCustomers.get(k).getEventCustomerStatusId() == 5 || listOfCustomers.get(k).getEventCustomerStatusId() == 8 || listOfCustomers.get(k).getEventCustomerStatusId() == 10 || listOfCustomers.get(k).getEventCustomerStatusId() == 15 || listOfCustomers.get(k).getEventCustomerStatusId() == 11 || listOfCustomers.get(k).getEventCustomerStatusId() == 12 || listOfCustomers.get(k).getEventCustomerStatusId() == 13) {
 						eventcustomerdto.setParticipationStatus("1");	
 						participationCount++;
 					}
@@ -1124,6 +1135,8 @@ public HashMap<String, Object> loginDSOUser(String email, String password) throw
 							eventCustomerDto.setPrice(evtmap.getBidPrice());
 							eventCustomerDto.setStatus(evtmap.getEventCustomerStatusId());
 							eventCustomerDto.setIsFineApplicable(evtmap.getIsFineApplicable());
+							eventCustomerDto.setEarnings(evtmap.getEarnings());
+							eventCustomerDto.setCustomerFine(evtmap.getCustomerFine());
 							// eventCustomerDto.setEventId(event.getEventId());
 							listOfEventCustDto.add(eventCustomerDto);
 						}

@@ -30,7 +30,7 @@ public class CompareHelper {
 			for (int i=0;i<listOfEvents.size();i++) {
 				if(listOfEvents.get(i).getEventStatusPl().getEventStatusId() == 2) {
 					publishedEvents++;
-				}  else if (listOfEvents.get(i).getEventStatusPl().getEventStatusId() == 3) {
+				}  else if (listOfEvents.get(i).getEventStatusPl().getEventStatusId() == 3 || listOfEvents.get(i).getEventStatusPl().getEventStatusId() == 9) {
 					completedEvents++;
 				}else if (listOfEvents.get(i).getEventStatusPl().getEventStatusId() == 4) {
 					cancelledEvents++;

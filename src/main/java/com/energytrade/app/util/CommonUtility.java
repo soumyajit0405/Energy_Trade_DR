@@ -330,7 +330,18 @@ return authCode;
 		System.out.println(startDate);
 		System.out.println(endDate);
 		ald.add(startDate);
-		ald.add(endDate);
+		if (arr[0].trim().equalsIgnoreCase("2345")) {
+			Calendar c = Calendar.getInstance();
+			c.setTime(endDate);
+			//Incrementing the date by 1 day
+			c.add(Calendar.DAY_OF_MONTH, 1);  
+			String newDate = sdf.format(c.getTime());  
+			Date newDated = sdf.parse(newDate);
+			ald.add(newDated);
+		} else {
+			ald.add(endDate);
+		}
+		
 		return ald;
 	}
 	

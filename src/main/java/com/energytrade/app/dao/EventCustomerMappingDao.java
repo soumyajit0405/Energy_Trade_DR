@@ -123,6 +123,7 @@ public class EventCustomerMappingDao extends AbstractBaseDao {
 				return response;
 			}
 			eventCustomerMappingRepo.withdrawFromEvent(userId, eventId);
+			eventCustomerMappingRepo.deleteEventDevices(evmt);
 			if (evmt.getEventCustomerStatusId() == 3) {
 			eventRepository.removeEventPower(evmt.getCommitedPower(),eventId);
 			eventSetRepository.removeCommittedPower(evmt.getCommitedPower(), event.getAllEventSet().getEventSetId());
