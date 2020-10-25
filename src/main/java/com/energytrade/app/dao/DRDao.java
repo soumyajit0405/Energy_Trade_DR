@@ -43,6 +43,7 @@ import com.energytrade.app.model.EventCustomerMapping;
 import com.energytrade.app.model.EventSetStatusPl;
 import com.energytrade.app.model.EventSetVersionHistory;
 import com.energytrade.app.model.EventStatusPl;
+import com.energytrade.app.model.GeneralConfig;
 //import com.energytrade.app.model.NonTradehourStatusPl;
 //import com.energytrade.app.model.NotificationRequestDto;
 //import com.energytrade.app.model.OrderStatusPl;
@@ -1500,5 +1501,19 @@ public HashMap<String, Object> loginDSOUser(String email, String password) throw
 			e.printStackTrace();
 		}
 		return alldsodto;
+	}
+	
+	
+	public ArrayList<GeneralConfig> getConfigValues(ArrayList<String> values) {
+		ArrayList<GeneralConfig> configValue = null ;
+		try {
+			configValue=alluserrepo.getConfigValues(values);
+		}
+		catch(Exception e) {
+			
+		} finally {
+			
+		}
+		return configValue;
 	}
 }

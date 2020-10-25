@@ -22,7 +22,6 @@ public class UserDRDevices {
 	private static final long serialVersionUID = 1L;
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "user_dr_device_id")
 	private int userDrDeviceId;
 
@@ -53,6 +52,41 @@ public class UserDRDevices {
 	
 	@Column(name = "port_number")
 	private String portNumber;
+	
+	@Column(name = "remote_number")
+	private String remoteNumber;
+	
+	@Column(name = "paired_device")
+	private int pairedDevice;
+
+	
+	public int getPairedDevice() {
+		return pairedDevice;
+	}
+
+	public void setPairedDevice(int pairedDevice) {
+		this.pairedDevice = pairedDevice;
+	}
+
+	@ManyToOne
+	@JoinColumn(name = "device_type_id")
+	private DrDeviceTypePl deviceTypeId;
+	
+	public String getRemoteNumber() {
+		return remoteNumber;
+	}
+
+	public void setRemoteNumber(String remoteNumber) {
+		this.remoteNumber = remoteNumber;
+	}
+
+	public DrDeviceTypePl getDeviceTypeId() {
+		return deviceTypeId;
+	}
+
+	public void setDeviceTypeId(DrDeviceTypePl deviceTypeId) {
+		this.deviceTypeId = deviceTypeId;
+	}
 
 	public String getPortNumber() {
 		return portNumber;

@@ -58,8 +58,20 @@ public interface DRCustomerRepository extends JpaRepository<AllUser, Long> {
 	void deleteDrDeviceDetails(int userDeviceId);
 	
 	@Modifying
+	@Query("delete UserDRDevices a where a.userDrDeviceId in ?1")
+	void deleteDrDeviceDetails(List<Integer> userDeviceId);
+	
+	@Modifying
+	@Query(value ="delete from customer_power_consumption  where device_id = ?1",nativeQuery = true)
+	void deleteCustomerPower(int userDeviceId);
+	
+	@Modifying
 	@Query("delete EventCustomerDevices a where a.userDrDevice.userDrDeviceId=?1")
 	void deleteEventCustomerDevices(int userDeviceId);
+	
+	@Modifying
+	@Query("delete EventCustomerDevices a where a.userDrDevice.userDrDeviceId in ?1")
+	void deleteEventCustomerDevices(List<Integer> userDeviceId);
 	
 	
 	@Query("select a from  UserDRDevices a where a.userDrDeviceId=?1")
@@ -68,5 +80,9 @@ public interface DRCustomerRepository extends JpaRepository<AllUser, Long> {
 	@Modifying
 	@Query("update AllKiotSwitch set usedFlag='N' where id=?1")
 	void updateKiotSwitch(int kiotSwitchId);
+	
+	@Modifying
+	@Query("update AllKiotRemote set usedFlag='N' where id=?1")
+	void updateKiotRemote(int kiotRemoteId);
 
 }

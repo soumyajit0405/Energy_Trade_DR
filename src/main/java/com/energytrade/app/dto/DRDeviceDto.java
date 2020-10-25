@@ -10,6 +10,42 @@ public class DRDeviceDto extends AbstractBaseDto {
 	private String deviceName;
 	private String customData;
 	private String usedFlag;
+	private String remoteNumber;
+	private int deviceTypeId;
+	private String deviceTypeName;
+	private int pairedDevice;
+
+	public int getPairedDevice() {
+		return pairedDevice;
+	}
+
+	public void setPairedDevice(int pairedDevice) {
+		this.pairedDevice = pairedDevice;
+	}
+
+	public int getDeviceTypeId() {
+		return deviceTypeId;
+	}
+
+	public void setDeviceTypeId(int deviceTypeId) {
+		this.deviceTypeId = deviceTypeId;
+	}
+
+	public String getRemoteNumber() {
+		return remoteNumber;
+	}
+
+	public void setRemoteNumber(String remoteNumber) {
+		this.remoteNumber = remoteNumber;
+	}
+
+	public String getDeviceTypeName() {
+		return deviceTypeName;
+	}
+
+	public void setDeviceTypeName(String deviceTypeName) {
+		this.deviceTypeName = deviceTypeName;
+	}
 
 	public String getKiotDeviceId() {
 		return kiotDeviceId;
