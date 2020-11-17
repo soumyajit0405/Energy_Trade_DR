@@ -558,9 +558,12 @@ public class DRDao extends AbstractBaseDao {
 				if(listOfDates.get(0).compareTo(afterHour) < 0) {
 					continue;
 				} 
-				if (cell3 == null || cell3.getNumericCellValue() <=0 || cell4 == null || cell4.getNumericCellValue() <=0) {
-					continue;
+				if (cell3 == null || cell3.getNumericCellValue() <=0) {
+					 continue;
 				}
+//				if (cell3 == null || cell3.getNumericCellValue() <=0 || cell4 == null || cell4.getNumericCellValue() <=0) {
+//					// continue; -- Commented for C&I Users
+//				}
 				alleventsetdto.setEventId(rowCount);
 				int eventNameSuffix = this.eventNameSuffix + count;
 				if (eventNameSuffix < 10) {

@@ -348,5 +348,10 @@ return authCode;
 	
 	public static void main(String args[]) throws ParseException {
 		// getDateFormatted("2300 - 2315");
+		double a = 0.6;
+		 double roundOff = (double) Math.round(a * 100) / 100;
+		 System.out.println(roundOff);
+
+
 	}
 }

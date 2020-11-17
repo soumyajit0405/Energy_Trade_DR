@@ -36,8 +36,8 @@ public interface DRCustomerRepository extends JpaRepository<AllUser, Long> {
 	@Query("select userDrDevice from EventCustomerDevices a where a.eventCustomerMapping.eventCustomerMappingId = ?1")
 	List<UserDRDevices> getuserMappedDevices(int eventCustomerMappingId);
 	
-	@Query("select a from UserDRDevices a where a.allUser.userId = ?1")
-	List<UserDRDevices> getAllUserDevices(int userId);
+	@Query("select a from UserDRDevices a where a.allUser.userId = ?1 and a.softdeleteflag= ?2")
+	List<UserDRDevices> getAllUserDevices(int userId, byte status);
 
 	@Modifying
 	@Query("update AllUser a set a.fullName=?1,a.userRolesPl.userRoleId=2,a.drContractNumber=?2 where a.phoneNumber=?3")
@@ -53,13 +53,25 @@ public interface DRCustomerRepository extends JpaRepository<AllUser, Long> {
 	@Query("update UserDRDevices a set a.deviceName=?1,a.device_capacity=?2 where a.userDrDeviceId=?3")
 	void updateDrDeviceDetails(String deviceName, double deviceCapacity, int userDeviceId);
 	
-	@Modifying
-	@Query("delete UserDRDevices a where a.userDrDeviceId=?1")
-	void deleteDrDeviceDetails(int userDeviceId);
+//	@Modifying
+//	@Query("delete UserDRDevices a where a.userDrDeviceId=?1")
+//	void deleteDrDeviceDetails(int userDeviceId);
 	
 	@Modifying
-	@Query("delete UserDRDevices a where a.userDrDeviceId in ?1")
-	void deleteDrDeviceDetails(List<Integer> userDeviceId);
+	@Query("update UserDRDevices a  set a.softdeleteflag =?2 where a.userDrDeviceId =?1")
+	void deleteDrDeviceDetails(int userDeviceId, byte status);
+	
+	/*
+	 * @Modifying
+	 * 
+	 * @Query("delete UserDRDevices a where a.userDrDeviceId in ?1") void
+	 * deleteDrDeviceDetails(List<Integer> userDeviceId);
+	 */
+	
+	@Modifying
+	@Query("update UserDRDevices a  set a.softdeleteflag =?2 where a.userDrDeviceId in ?1")
+	void deleteDrDeviceDetails(List<Integer> userDeviceId, byte status);
+	
 	
 	@Modifying
 	@Query(value ="delete from customer_power_consumption  where device_id = ?1",nativeQuery = true)

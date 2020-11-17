@@ -235,7 +235,8 @@ public class DRCustomerDao {
 				customerEventDetails.setEventCustomerDetails(cem);
 				allEvents.add(customerEventDetails);
 			}
-			List<UserDRDevices> aud = drCustomerRepo.getAllUserDevices(customerId);
+			byte status = 0;
+		List<UserDRDevices> aud = drCustomerRepo.getAllUserDevices(customerId,status);
 			List<DRDeviceDto> userDRdevices = new ArrayList<DRDeviceDto>();
 
 			for (int i = 0; i < aud.size(); i++) {
@@ -294,7 +295,8 @@ public class DRCustomerDao {
 			} else {
 				response.put("drContractNumber", null);
 			}
-			List<UserDRDevices> aud = drCustomerRepo.getAllUserDevices(customerId);
+			byte status = 0;
+			List<UserDRDevices> aud = drCustomerRepo.getAllUserDevices(customerId,status);
 			List<DRDeviceDto> userDRdevices = new ArrayList<DRDeviceDto>();
 
 			for (int i = 0; i < aud.size(); i++) {
@@ -424,10 +426,11 @@ public class DRCustomerDao {
 		HashMap<String, Object> response = new HashMap<String, Object>();
 		try {
 			UserDRDevices drDevice = drCustomerRepo.getDrDeviceDetails(userDrDeviceId);
-			if (drDevice.getPairedDevice() == -1) { 
+			byte status = 1;
+			if (drDevice.getPairedDevice() == -1 && drDevice != null) { 
 			drCustomerRepo.updateKiotSwitch(Integer.parseInt(drDevice.getPortNumber()));
 			drCustomerRepo.deleteEventCustomerDevices(userDrDeviceId);
-			drCustomerRepo.deleteDrDeviceDetails(userDrDeviceId);
+			drCustomerRepo.deleteDrDeviceDetails(userDrDeviceId, status);
 			} else {
 				UserDRDevices pairedDevice = drCustomerRepo.getDrDeviceDetails(drDevice.getPairedDevice());
 				List<Integer> devices = new ArrayList<>();
@@ -445,9 +448,9 @@ public class DRCustomerDao {
 					drCustomerRepo.updateKiotSwitch(Integer.parseInt(pairedDevice.getPortNumber()));
 				}
 				drCustomerRepo.deleteEventCustomerDevices(devices);
-				drCustomerRepo.deleteCustomerPower(drDevice.getUserDrDeviceId());
-				drCustomerRepo.deleteCustomerPower(pairedDevice.getUserDrDeviceId());
-				drCustomerRepo.deleteDrDeviceDetails(devices);
+//				drCustomerRepo.deleteCustomerPower(drDevice.getUserDrDeviceId());
+//				drCustomerRepo.deleteCustomerPower(pairedDevice.getUserDrDeviceId());
+				drCustomerRepo.deleteDrDeviceDetails(devices,status);
 			}
 			response.put("message", CustomMessages.getCustomMessages("DS"));
 			response.put("key", "200");
@@ -493,7 +496,20 @@ public class DRCustomerDao {
 				int remoteCount = count;	
 					if ((drdeviceDetails.get("deviceType").equalsIgnoreCase("AC"))) {
 						if (kiotRemotes.isEmpty()) {
-							response.put("message", "No Remotes available. Cannot add device");
+							DrDeviceTypePl switchType = userdrdevicerepo.getDrDeviceType("Switch");
+							UserDRDevices userdrdevices = new UserDRDevices();
+							userdrdevices.setAllUser(alluser);
+							userdrdevices.setUserDrDeviceId(remoteCount);
+							userdrdevices.setDeviceTypeId(switchType);
+							userdrdevices.setDeviceName(drdeviceDetails.get("deviceName"));
+							userdrdevices.setDevice_capacity(Double.parseDouble(drdeviceDetails.get("deviceCapacity")));
+							userdrdevices.setPortNumber(Integer.toString(kiotSwitches.get(i).getId()));
+							userdrdevices.setRemoteNumber("NA");
+							userdrdevices.setPairedDevice(-1);
+							allKiotSwithcesRepo.updateKiotSwicthes(kiotSwitches.get(i).getId());
+							kiotSwitches.remove(i);
+							userdrdevicerepo.saveAndFlush(userdrdevices);
+							response.put("message", CustomMessages.getCustomMessages("SUC"));
 							response.put("key", "200");
 							return response;
 						}
@@ -517,7 +533,9 @@ public class DRCustomerDao {
 					userdrdevices1.setUserDrDeviceId(switchCount);
 					userdrdevices1.setDeviceTypeId(remote);
 					userdrdevices1.setDeviceName(drdeviceDetails.get("deviceName")+" 27");
-					userdrdevices1.setDevice_capacity(Math.ceil(Double.parseDouble(AppStartupRunner.configValues.get("IRpowerRatio"))*(Double.parseDouble(drdeviceDetails.get("deviceCapacity")))));
+					double remotePower = (Double.parseDouble(AppStartupRunner.configValues.get("IRpowerRatio"))*(Double.parseDouble(drdeviceDetails.get("deviceCapacity"))));
+					remotePower = (double)Math.round(remotePower * 100) / 100;	
+					userdrdevices1.setDevice_capacity(remotePower);
 					
 					userdrdevices1.setRemoteNumber(Integer.toString(kiotRemotes.get(i).getId()));
 					userdrdevices1.setPortNumber("NA");
@@ -529,13 +547,16 @@ public class DRCustomerDao {
 					userdrdevicerepo.updatePairedDevice(remoteCount, switchCount);
 					userdrdevicerepo.updatePairedDevice(switchCount, remoteCount);
 				} else {
+					DrDeviceTypePl switchType = userdrdevicerepo.getDrDeviceType("Switch");
 				UserDRDevices userdrdevices = new UserDRDevices();
 				userdrdevices.setAllUser(alluser);
 				userdrdevices.setUserDrDeviceId(count);
+				userdrdevices.setDeviceTypeId(switchType);
 				userdrdevices.setDeviceName(drdeviceDetails.get("deviceName"));
-				userdrdevices.setDevice_capacity(Math.ceil(0.4*(Double.parseDouble(drdeviceDetails.get("deviceCapacity")))));
+				userdrdevices.setDevice_capacity(Math.ceil((Double.parseDouble(drdeviceDetails.get("deviceCapacity")))));
 				userdrdevices.setPortNumber(Integer.toString(kiotSwitches.get(i).getId()));
 				userdrdevices.setPairedDevice(-1);
+				userdrdevices.setRemoteNumber("NA");
 				allKiotSwithcesRepo.updateKiotSwicthes(kiotSwitches.get(i).getId());
 				kiotSwitches.remove(i);
 				listofDevices.add(userdrdevices);
