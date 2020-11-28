@@ -546,6 +546,21 @@ public class DRCustomerDao {
 					userdrdevicerepo.saveAndFlush(userdrdevices1);
 					userdrdevicerepo.updatePairedDevice(remoteCount, switchCount);
 					userdrdevicerepo.updatePairedDevice(switchCount, remoteCount);
+				} else if((drdeviceDetails.get("deviceType").equalsIgnoreCase("LOAD_SHIFT"))){
+					DrDeviceTypePl switchType = userdrdevicerepo.getDrDeviceType("Load Shift");
+				UserDRDevices userdrdevices = new UserDRDevices();
+				userdrdevices.setAllUser(alluser);
+				userdrdevices.setUserDrDeviceId(count);
+				userdrdevices.setDeviceTypeId(switchType);
+				userdrdevices.setDeviceName(drdeviceDetails.get("deviceName"));
+				userdrdevices.setDevice_capacity(Math.ceil((Double.parseDouble(drdeviceDetails.get("deviceCapacity")))));
+				userdrdevices.setPortNumber(Integer.toString(kiotSwitches.get(i).getId()));
+				userdrdevices.setPairedDevice(-1);
+				userdrdevices.setRemoteNumber("NA");
+				allKiotSwithcesRepo.updateKiotSwicthes(kiotSwitches.get(i).getId());
+				kiotSwitches.remove(i);
+				listofDevices.add(userdrdevices);
+				userdrdevicerepo.saveAndFlush(userdrdevices);
 				} else {
 					DrDeviceTypePl switchType = userdrdevicerepo.getDrDeviceType("Switch");
 				UserDRDevices userdrdevices = new UserDRDevices();

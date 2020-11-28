@@ -18,6 +18,7 @@ import com.energytrade.app.model.AllState;
 import com.energytrade.app.model.AllTimeslot;
 import com.energytrade.app.model.AllUser;
 import com.energytrade.app.model.ContractStatusPl;
+import com.energytrade.app.model.DREventTypePl;
 import com.energytrade.app.model.EventStatusPl;
 import com.energytrade.app.model.LocalityPl;
 import com.energytrade.app.model.NonTradeHour;
@@ -78,4 +79,7 @@ public interface EventRepository extends JpaRepository<AllEvent, Long>
 	  @Query("delete from AllEvent a where a.eventId=?1") 
 		void deleteById(int eventId);
 
+	  @Query("Select a from DREventTypePl a where  a.name =?1") 
+	  DREventTypePl getDrEventTypePl(String name);
+	  
 	}

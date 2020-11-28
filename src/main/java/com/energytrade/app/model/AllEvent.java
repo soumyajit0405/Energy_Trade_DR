@@ -47,7 +47,19 @@ public class AllEvent implements Serializable {
 	@Column(name="dso_net_meter_reading_e")
 	private double dsoNetMeterReadinge;
 	
+	@ManyToOne
+	@JoinColumn(name="event_type_id")
+	private DREventTypePl eventTypeId;
 	
+	
+	public DREventTypePl getEventTypeId() {
+		return eventTypeId;
+	}
+
+	public void setEventTypeId(DREventTypePl eventTypeId) {
+		this.eventTypeId = eventTypeId;
+	}
+
 	public double getDsoNetMeterReadings() {
 		return dsoNetMeterReadings;
 	}

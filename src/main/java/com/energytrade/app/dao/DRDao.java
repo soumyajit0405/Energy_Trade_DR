@@ -35,6 +35,7 @@ import com.energytrade.app.model.AllEventSet;
 //import com.energytrade.app.model.AllSellOrder;
 //import com.energytrade.app.model.AllTimeslot;
 import com.energytrade.app.model.AllUser;
+import com.energytrade.app.model.DREventTypePl;
 //import com.energytrade.app.model.EventCustomerDevices;
 //import com.energytrade.app.model.ContractStatusPl;
 //import com.energytrade.app.model.DevicePl;
@@ -526,6 +527,7 @@ public class DRDao extends AbstractBaseDao {
 			int rowCount = eventrepo.getEventCount();
 			ArrayList<Date> listOfDates = new ArrayList<Date>();
 			EventStatusPl eventstatuspl = eventrepo.getEventStatus("Created");
+			DREventTypePl eventType = eventrepo.getDrEventTypePl("Peak Shave");
 			// List<AllEvent> listOfEvents = new ArrayList<AllEvent>();
 			while (rowIterator.hasNext()) {
 				count++;
@@ -583,6 +585,7 @@ public class DRDao extends AbstractBaseDao {
 				allevent.setDsoNetMeterReadinge(0);
 				allevent.setDsoNetMeterReadings(0);
 				alleventsetdto.setPlannedPower(Double.toString(cell3.getNumericCellValue()));
+				allevent.setEventTypeId(eventType);
 				if (cell4 != null) {
 					allevent.setExpectedPrice(cell4.getNumericCellValue());
 					alleventsetdto.setPrice(Double.toString(cell4.getNumericCellValue()));
