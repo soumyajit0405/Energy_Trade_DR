@@ -23,6 +23,23 @@ public class CustomerEventDetailsDto extends AbstractBaseDto {
 	private CustomerEventMappingDetailsDto eventCustomerDetails;
 	private Double buyerFine;
 	private String isFineApplicable;
+	private int eventTypeId;
+	public int getEventTypeId() {
+		return eventTypeId;
+	}
+	public void setEventTypeId(int eventTypeId) {
+		this.eventTypeId = eventTypeId;
+	}
+	private String eventTypeName;
+	
+	
+	public String getEventTypeName() {
+		return eventTypeName;
+	}
+	public void setEventTypeName(String eventTypeName) {
+		this.eventTypeName = eventTypeName;
+	}
+	
 	
 	
 	public Double getBuyerFine() {

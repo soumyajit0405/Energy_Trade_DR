@@ -153,6 +153,8 @@ public class DRCustomerDao {
 					eventSetEvent.setEventCustomerMappingStatus(String.valueOf(evmp.getEventCustomerStatusId()));
 					eventSetEvent.setEarnings(Double.toString(evmp.getEarnings()));
 					eventSetEvent.setIsFineApplicable(evmp.getIsFineApplicable());
+					eventSetEvent.setEventTypeId(eventsForCustomer.get(j).getEventTypeId().getDrEventTypeId());
+					eventSetEvent.setEventTypeName(eventsForCustomer.get(j).getEventTypeId().getName());
 					listOfEvents.add(eventSetEvent);
 
 				}
@@ -191,6 +193,8 @@ public class DRCustomerDao {
 				customerEventDetails.setActualPower(cusomterEvents.get(i).getActualPower());
 				customerEventDetails.setExpectedPrice(cusomterEvents.get(i).getExpectedPrice());
 				customerEventDetails.setCreatedTs(cusomterEvents.get(i).getCreatedTs());
+				customerEventDetails.setEventTypeId(cusomterEvents.get(i).getEventTypeId().getDrEventTypeId());
+				customerEventDetails.setEventTypeName(cusomterEvents.get(i).getEventTypeId().getName());
 				if (cusomterEvents.get(i).getIsFineApplicable() != null) {
 					customerEventDetails.setIsFineApplicable(cusomterEvents.get(i).getIsFineApplicable());
 				}

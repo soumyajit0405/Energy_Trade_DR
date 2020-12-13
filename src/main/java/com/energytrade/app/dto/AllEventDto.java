@@ -15,8 +15,22 @@ public class AllEventDto extends AbstractBaseDto{
 	private String startTime;
 	private double buyerFine;
 	private String isFineApplicable;
+	private int eventTypeId;
+	public int getEventTypeId() {
+		return eventTypeId;
+	}
+	public void setEventTypeId(int eventTypeId) {
+		this.eventTypeId = eventTypeId;
+	}
+	private String eventTypeName;
 	
 	
+	public String getEventTypeName() {
+		return eventTypeName;
+	}
+	public void setEventTypeName(String eventTypeName) {
+		this.eventTypeName = eventTypeName;
+	}
 	public double getBuyerFine() {
 		return buyerFine;
 	}

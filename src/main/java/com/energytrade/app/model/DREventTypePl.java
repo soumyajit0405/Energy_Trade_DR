@@ -12,7 +12,7 @@ import java.util.List;
  */
 @Entity
 @Table(name="dr_event_types_pl")
-@NamedQuery(name="DrEventTypePl.findAll", query="SELECT e FROM DrEventTypePl e")
+@NamedQuery(name="DrEventTypePl.findAll", query="SELECT e FROM DREventTypePl e")
 public class DREventTypePl implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -29,8 +29,6 @@ public class DREventTypePl implements Serializable {
 
 	private byte softdeleteflag;
 
-	@Column(name="dr_event_types_name")
-	private String drEventTypeName;
 
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="sync_ts")
@@ -38,6 +36,17 @@ public class DREventTypePl implements Serializable {
 
 	@Column(name="updated_by")
 	private String updatedBy;
+	
+	@Column(name="dr_event_types_name")
+	private String name;
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
 
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="updated_ts")
@@ -82,13 +91,6 @@ public class DREventTypePl implements Serializable {
 		this.softdeleteflag = softdeleteflag;
 	}
 
-	public String getDrEventTypeName() {
-		return drEventTypeName;
-	}
-
-	public void setDrEventTypeName(String drEventTypeName) {
-		this.drEventTypeName = drEventTypeName;
-	}
 
 	public Date getSyncTs() {
 		return syncTs;

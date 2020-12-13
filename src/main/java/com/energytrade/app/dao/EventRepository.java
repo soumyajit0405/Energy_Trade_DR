@@ -38,10 +38,17 @@ public interface EventRepository extends JpaRepository<AllEvent, Long>
 	
 	 @Query("Select a from AllEvent a where a.allEventSet.eventSetId=?1 order by a.eventId desc") 
 	 List<AllEvent> getLatestEvent(int eventSetId);
+	 
+	 @Query("Select a from AllEvent a where a.allEventSet.eventSetId=?1 order by a.eventId asc") 
+	 List<AllEvent> getEvent(int eventSetId);
 	
 	 @Query("Select a from EventStatusPl a where  a.name=?1") 
 	 EventStatusPl getEventStatus(String eventStatusName);
 	
+	 @Modifying
+     @Query("update AllEvent a set a.eventStatusPl.eventStatusId=?1,a.eventTypeId.drEventTypeId=?3 where a.eventId=?2")
+     void updateEvent(int eventStatusId, int eventId, int eventTyepId);
+	 
 	 @Modifying
      @Query("update AllEvent a set a.eventStatusPl.eventStatusId=?1 where a.eventId=?2")
      void updateEvent(int eventStatusId, int eventId);

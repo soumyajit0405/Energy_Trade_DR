@@ -45,8 +45,8 @@ public class DRService extends AbstractBaseService
         return this.drdao.loginDSOUser(email,password);
     }
     
-    public HashMap<String,Object> updateEvent(List<Integer> events, int eventSetId) {
-    	return drdao.updateEvent(events, eventSetId);
+    public HashMap<String,Object> updateEvent(List<HashMap<String,Integer>> events, int eventSetId) {
+    return drdao.updateEvent(events, eventSetId);
     }
     
     public HashMap<String,Object> updateCustomer(List<Integer> customer,List<Integer> eventId) {

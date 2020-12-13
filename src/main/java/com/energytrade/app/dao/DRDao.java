@@ -586,6 +586,8 @@ public class DRDao extends AbstractBaseDao {
 				allevent.setDsoNetMeterReadings(0);
 				alleventsetdto.setPlannedPower(Double.toString(cell3.getNumericCellValue()));
 				allevent.setEventTypeId(eventType);
+				alleventsetdto.setEventTypeId(eventType.getDrEventTypeId());
+				alleventsetdto.setEventTypeName(eventType.getName());
 				if (cell4 != null) {
 					allevent.setExpectedPrice(cell4.getNumericCellValue());
 					alleventsetdto.setPrice(Double.toString(cell4.getNumericCellValue()));
@@ -687,6 +689,8 @@ public class DRDao extends AbstractBaseDao {
 				alleventdto.setStartTime(allevent.getEventStartTime().toString());
 				alleventdto.setEndTime(allevent.getEventEndTime().toString());
 				alleventdto.setCommittedPower(Double.toString(allevent.getCommitedPower()));
+				alleventdto.setEventTypeId(allevent.getEventTypeId().getDrEventTypeId());
+				alleventdto.setEventTypeName(allevent.getEventTypeId().getName());
 				if (allevent.getEventStatusPl().getEventStatusId() == 9) {
 				alleventdto.setShortfall(Double.toString(allevent.getCommitedPower() - allevent.getActualPower()));
 				} else {
@@ -797,49 +801,48 @@ public class DRDao extends AbstractBaseDao {
 				alleventsetdto.setCompletedEvents(status.get(1));
 				alleventsetdto.setCancelledEvents(status.get(2));
 			}
-			for (int i = 0; i < alleventset.getAllEvents().size(); i++) {
+			List<AllEvent> events = eventrepo.getEvent(eventSetId);
+			for (int i = 0; i < events.size(); i++) {
 				count = 0;
-				if (alleventset.getAllEvents().get(i).getEventId() == 1218) {
-					System.out.println(1218);
-				}
 				participationCount=0;noResponseCount=0;counterBid=0;notifiedCount=0;
 				AllEventDto alleventdto = new AllEventDto();
-				alleventdto.setEventId(alleventset.getAllEvents().get(i).getEventId());
-				alleventdto.setEventName(alleventset.getAllEvents().get(i).getEventName());
-				alleventdto.setEventStatus(alleventset.getAllEvents().get(i).getEventStatusPl().getName());
-				alleventdto.setPower(alleventset.getAllEvents().get(i).getActualPower());
-				
+				alleventdto.setEventId(events.get(i).getEventId());
+				alleventdto.setEventName(events.get(i).getEventName());
+				alleventdto.setEventStatus(events.get(i).getEventStatusPl().getName());
+				alleventdto.setPower(events.get(i).getActualPower());
+				alleventdto.setEventTypeId(events.get(i).getEventTypeId().getDrEventTypeId());
+				alleventdto.setEventTypeName(events.get(i).getEventTypeId().getName());
 				
 				alleventdto.setPlannedPower(
-						Double.toString(alleventset.getAllEvents().get(i).getPlannedPower()));
+						Double.toString(events.get(i).getPlannedPower()));
 				alleventdto.setPrice(
-						Double.toString(alleventset.getAllEvents().get(i).getExpectedPrice()));
+						Double.toString(events.get(i).getExpectedPrice()));
 				alleventdto.setNumberOfCustomers(Integer.toString(
-						alleventset.getAllEvents().get(i).getEventCustomerMappings().size()));
+						events.get(i).getEventCustomerMappings().size()));
 				alleventdto.setStartTime(
-						alleventset.getAllEvents().get(i).getEventStartTime().toString());
+						events.get(i).getEventStartTime().toString());
 				alleventdto.setEndTime(
-						alleventset.getAllEvents().get(i).getEventEndTime().toString());
+						events.get(i).getEventEndTime().toString());
 				alleventdto.setCommittedPower(
-						Double.toString(alleventset.getAllEvents().get(i).getCommitedPower()));
-				if (alleventset.getAllEvents().get(i).getEventStatusPl().getEventStatusId() == 9) {
-				alleventdto.setShortfall(Double.toString(alleventset.getAllEvents().get(i).getCommitedPower() - alleventset.getAllEvents().get(i).getActualPower()));
+						Double.toString(events.get(i).getCommitedPower()));
+				if (events.get(i).getEventStatusPl().getEventStatusId() == 9) {
+				alleventdto.setShortfall(Double.toString(events.get(i).getCommitedPower() - alleventset.getAllEvents().get(i).getActualPower()));
 				} else {
 					alleventdto.setShortfall("0");
 				}
 				alleventdto.setActualPower(
-						Double.toString(alleventset.getAllEvents().get(i).getActualPower()));
+						Double.toString(events.get(i).getActualPower()));
 				alleventdto.setStartTime(
-						alleventset.getAllEvents().get(i).getEventStartTime().toString());
-				if (alleventset.getAllEvents().get(i).getIsFineApplicable() != null) {
+						events.get(i).getEventStartTime().toString());
+				if (events.get(i).getIsFineApplicable() != null) {
 					alleventdto.setIsFineApplicable(
-							alleventset.getAllEvents().get(i).getIsFineApplicable());
+							events.get(i).getIsFineApplicable());
 				}
-				if (Double.valueOf(alleventset.getAllEvents().get(i).getBuyerFine()) != null) {
-					alleventdto.setBuyerFine(alleventset.getAllEvents().get(i).getBuyerFine());
+				if (Double.valueOf(events.get(i).getBuyerFine()) != null) {
+					alleventdto.setBuyerFine(events.get(i).getBuyerFine());
 				}
 				List<EventCustomerMapping> listOfCustomers = eventcustomerrepo
-						.getEventCustomerMappings(alleventset.getAllEvents().get(i).getEventId());
+						.getEventCustomerMappings(events.get(i).getEventId());
 				List<EventCustomerDto> listOfCustomersdto = new ArrayList<EventCustomerDto>();
 				for (int k = 0; k < listOfCustomers.size(); k++) {
 					EventCustomerDto eventcustomerdto = new EventCustomerDto();
@@ -981,16 +984,17 @@ public HashMap<String, Object> loginDSOUser(String email, String password) throw
 		return response;
 	}
 
-	public HashMap<String, Object> updateEvent(List<Integer> events, int eventSetId) {
+	public HashMap<String, Object> updateEvent(List<HashMap<String,Integer>> events, int eventSetId) {
 
 		HashMap<String, Object> response = new HashMap<String, Object>();
 		try {
 
 			for (int i = 0; i < events.size(); i++) {
-				eventrepo.updateEvent(2, events.get(i));
-				eventcustomerrepo.updateEventCustomer(2, events.get(i));
+				HashMap<String,Integer> event = events.get(i);
+				eventrepo.updateEvent(2, event.get("id"),event.get("type"));
+				eventcustomerrepo.updateEventCustomer(2, event.get("id"));
 			}
-			int eventCount = eventrepo.getEventByStatusId(events.get(0));
+			int eventCount = eventrepo.getEventByStatusId(events.get(0).get("id"));
 			if (eventCount > 0) {
 				eventsetrepo.updateEvent(3, eventSetId);
 			} else {

@@ -15,6 +15,22 @@ public class EventSetEventDto extends AbstractBaseDto {
 	private String counterBidFlag;
 	private String earnings;
 	private String isFineApplicable;
+	private int eventTypeId;
+	public int getEventTypeId() {
+		return eventTypeId;
+	}
+	public void setEventTypeId(int eventTypeId) {
+		this.eventTypeId = eventTypeId;
+	}
+	private String eventTypeName;
+	
+	
+	public String getEventTypeName() {
+		return eventTypeName;
+	}
+	public void setEventTypeName(String eventTypeName) {
+		this.eventTypeName = eventTypeName;
+	}
 	public String getEarnings() {
 		return earnings;
 	}

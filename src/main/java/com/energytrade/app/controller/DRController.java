@@ -168,7 +168,7 @@ public class DRController extends AbstractBaseController
     @RequestMapping(value =REST+"publishEvent" , method =  RequestMethod.POST , headers =  "Accept=application/json" )
     public HashMap<String,Object> updateEvent(@RequestBody HashMap<String,Object> events) {
     	HashMap<String,Object> response=new HashMap<String, Object>();
-    	response.put("response", drservice.updateEvent((List<Integer>)events.get("eventIdList"),(int)events.get("eventSetId")));
+    	response.put("response", drservice.updateEvent((List<HashMap<String,Integer>>)events.get("eventIdList"),(int)events.get("eventSetId")));
     	return response;
     }
     
