@@ -24,7 +24,7 @@ public interface DRCustomerRepository extends JpaRepository<AllUser, Long> {
 	@Query("Select count(a.userId) from AllUser a where a.drContractNumber=?1")
 	int getUserDetailsfromContract(String drContractNumber);
 
-	@Query("select distinct a from AllEventSet a, AllEvent b, EventCustomerMapping c where b.eventId = c.allEvent.eventId and a.eventSetId = b.allEventSet.eventSetId and c.allUser.userId = ?1 and c.eventCustomerStatusId != 1")
+	@Query("select distinct a from AllEventSet a, AllEvent b, EventCustomerMapping c where b.eventId = c.allEvent.eventId and a.eventSetId = b.allEventSet.eventSetId and c.allUser.userId = ?1 and c.eventCustomerStatusId != 1 order by a.eventSetId desc")
 	List<AllEventSet> getEventSetsForCustomer(int customerId);
 
 	@Query("select a from AllEvent a, EventCustomerMapping b where a.eventId = b.allEvent.eventId and b.allUser.userId = ?1 and a.allEventSet.eventSetId = ?2 and b.eventCustomerStatusId != 1")

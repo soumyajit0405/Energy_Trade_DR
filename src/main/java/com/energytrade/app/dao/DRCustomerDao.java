@@ -130,9 +130,9 @@ public class DRCustomerDao {
 				eventSetDetailsDto.setEventSetDate(customerEventSets.get(i).getDate());
 				List<EventSetEventDto> listOfEvents = new ArrayList<EventSetEventDto>();
 
-				List<AllEvent> eventsForCustomer = drCustomerRepo.getEventsForCustomerAndEventSet(customerId,
-						customerEventSets.get(i).getEventSetId());
-
+//				List<AllEvent> eventsForCustomer = drCustomerRepo.getEventsForCustomerAndEventSet(customerId,
+//						customerEventSets.get(i).getEventSetId());
+				List<AllEvent> eventsForCustomer = customerEventSets.get(i).getAllEvents();
 				for (int j = 0; j < eventsForCustomer.size(); j++) {
 					EventCustomerMapping evmp = drCustomerRepo.getEventCustomerMapping(customerId,
 							eventsForCustomer.get(j).getEventId());
